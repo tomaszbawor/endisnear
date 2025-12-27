@@ -6,7 +6,25 @@ To install dependencies:
 bun install
 ```
 
-To run:
+To run Vite dev server:
+
+```bash
+bun run dev
+```
+
+To build for production:
+
+```bash
+bun run build
+```
+
+To preview the production build:
+
+```bash
+bun run preview
+```
+
+To run the previous Bun entry point:
 
 ```bash
 bun run index.ts
