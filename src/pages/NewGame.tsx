@@ -1,6 +1,7 @@
 import { Plus, Save } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import CenteredPageContainer from "@/components/custom/CenteredPageContainer";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -10,7 +11,6 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import CenteredPageContainer from "../custom/CenteredPageContainer";
 
 export default function NewGamePage() {
 	const navigate = useNavigate();

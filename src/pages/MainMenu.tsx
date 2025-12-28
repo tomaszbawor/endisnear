@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { useNavigate } from "react-router";
+import CenteredPageContainer from "@/components/custom/CenteredPageContainer";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -35,7 +36,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import CenteredPageContainer from "../custom/CenteredPageContainer";
 
 type MenuAction =
 	| { type: "start" }
