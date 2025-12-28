@@ -11,22 +11,13 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useSavesValues } from "@/state/gameSaves";
 
 export default function NewGamePage() {
 	const navigate = useNavigate();
 	const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
 
-	// Mock save slot data - replace with actual save data from storage
-	const saveSlots = [
-		{
-			id: 1,
-			isEmpty: true,
-		},
-		{
-			id: 2,
-			isEmpty: false,
-		},
-	] as const;
+	const gameSaves = useSavesValues();
 
 	const handleSlotSelect = (slotId: number) => {
 		console.log(`Slot selected ${slotId}`);
@@ -62,20 +53,21 @@ export default function NewGamePage() {
 
 					{/* Save Slots */}
 					<div className="grid gap-4 md:grid-cols-2 mb-8">
-						{saveSlots.map((slot) => (
+						{gameSaves.map((slot, idx) => (
 							<Card
-								key={slot.id}
+								// biome-ignore lint/suspicious/noArrayIndexKey: This is tuple
+								key={idx}
 								className={`cursor-pointer transition-all hover:border-foreground/50 ${
-									selectedSlot === slot.id
+									selectedSlot === idx
 										? "border-amber-300 ring-2 ring-foreground/20"
 										: ""
 								}`}
-								onClick={() => handleSlotSelect(slot.id)}
+								onClick={() => handleSlotSelect(idx)}
 							>
 								<CardHeader>
 									<CardTitle className="flex items-center justify-between text-base">
-										<span>Slot {String(slot.id).padStart(2, "0")}</span>
-										{slot.isEmpty ? (
+										<span>Slot {String(idx + 1).padStart(2, "0")}</span>
+										{slot == null ? (
 											<div className="flex items-center gap-1.5 text-sm text-muted-foreground font-normal">
 												<Plus className="h-3.5 w-3.5" />
 												<span>Empty</span>
@@ -85,12 +77,10 @@ export default function NewGamePage() {
 										)}
 									</CardTitle>
 									<CardDescription>
-										{slot.isEmpty
-											? "Start a new adventure"
-											: `Last saved 10 days ago`}
+										{slot == null ? "Start a new adventure" : slot.timePlayed}
 									</CardDescription>
 								</CardHeader>
-								{!slot.isEmpty && (
+								{!(slot == null) && (
 									<CardContent>
 										<div className="rounded-lg border p-3">
 											<div className="space-y-1 text-sm">
@@ -98,7 +88,7 @@ export default function NewGamePage() {
 													<span className="text-muted-foreground">
 														Character
 													</span>
-													<span className="font-medium">Placeholder name</span>
+													<span className="font-medium">{slot.playerName}</span>
 												</div>
 												<Separator className="my-2" />
 												<div className="flex items-center justify-between">
@@ -106,14 +96,16 @@ export default function NewGamePage() {
 														Location
 													</span>
 													<span className="text-foreground">
-														Placeholder location
+														{slot.location}
 													</span>
 												</div>
 												<div className="flex items-center justify-between">
 													<span className="text-muted-foreground">
 														Time played
 													</span>
-													<span className="text-foreground">some time</span>
+													<span className="text-foreground">
+														{slot.timePlayed}
+													</span>
 												</div>
 											</div>
 										</div>
