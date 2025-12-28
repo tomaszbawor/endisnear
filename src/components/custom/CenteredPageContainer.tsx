@@ -11,7 +11,7 @@ export default function CenteredPageContainer({ children }: PropsWithChildren) {
 			</div>
 
 			<div className="min-h-screen w-full flex items-center justify-center p-4">
-				<div className="w-full max-w-[1024px] max-h-[768px] rounded-2xl shadow p-6 overflow-hidden ">
+				<div className="w-full min-h-[768px] max-w-[1024px] max-h-[768px] rounded-2xl shadow p-6 overflow-hidden ">
 					{children}
 				</div>
 			</div>
