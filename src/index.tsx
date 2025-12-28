@@ -1,30 +1,29 @@
-import { Atom, useAtomSet, useAtomValue } from "@effect-atom/atom-react";
-import type { FC } from "react";
-
+import { createRoot } from "react-dom/client";
+import MainMenu from "./components/pages/MainMenu";
 import "./styles/globals.css";
+import { createBrowserRouter, RouterProvider } from "react-router";
 import CharacterPage from "./components/features/CharacterPage";
-import { Button } from "./components/ui/button";
+import NewGamePage from "./components/pages/NewGame";
 
-const countValueAtom = Atom.make(0);
+const root = document.getElementById("root");
 
-export const IndexPage: FC = () => {
-	const countValue = useAtomValue(countValueAtom);
-	const setCountValue = useAtomSet(countValueAtom);
+const router = createBrowserRouter([
+	{
+		path: "/",
+		element: <MainMenu />,
+	},
+	{
+		path: "/newGame",
+		element: <NewGamePage />,
+	},
+	{
+		path: "/characterPage",
+		element: <CharacterPage />,
+	},
+]);
 
-	const onclick = () => {
-		setCountValue((num) => num + 1);
-	};
+if (!root) {
+	throw new Error("Root container not found");
+}
 
-	return (
-		<div className="container min-h-screen flex flex-col gap-8">
-			<div className="border-4 border-primary p-6 bg-card shadow-[8px_8px_0px_0px_rgba(0,255,65,0.3)]">
-				<h1 className="text-2xl mb-6 text-primary">End Is Near</h1>
-				<div>
-					<Button onClick={onclick}>Number: {countValue}</Button>
-				</div>
-			</div>
-
-			<CharacterPage />
-		</div>
-	);
-};
+createRoot(root).render(<RouterProvider router={router} />);
