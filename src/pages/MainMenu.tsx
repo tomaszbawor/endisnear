@@ -1,3 +1,4 @@
+import { useAtomSet, useAtomValue } from "@effect-atom/atom-react";
 import {
 	Info,
 	Monitor,
@@ -26,16 +27,10 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { gameConfigAtom } from "@/state/gameConfig";
 
 type MenuAction =
 	| { type: "start" }
@@ -46,10 +41,30 @@ type MenuAction =
 export default function EndIsNearMainMenu() {
 	const [hasSave] = React.useState<boolean>(false);
 
-	// Settings state - Externalize into the local storage
-	const [masterVolume, setMasterVolume] = React.useState<number[]>([70]);
-	const [fullscreen, setFullscreen] = React.useState<boolean>(true);
-	const [difficulty, setDifficulty] = React.useState<string>("normal");
+	//TODO: Move settings dialog to component
+	const gameSettings = useAtomValue(gameConfigAtom);
+	const setGameSettings = useAtomSet(gameConfigAtom);
+
+	const setMasterVolume = (vol: [number]) => {
+		setGameSettings({
+			...gameSettings,
+			volume: vol[0],
+		});
+	};
+
+	const setIsFullScreen = (isFullscreen: boolean) => {
+		setGameSettings({
+			...gameSettings,
+			isFullscreen: isFullscreen,
+		});
+	};
+
+	const resetSettings = () => {
+		setGameSettings({
+			volume: 50,
+			isFullscreen: false,
+		});
+	};
 
 	//TODO: Remove this dispatch mechanism
 	const dispatch = React.useCallback((action: MenuAction) => {
@@ -134,12 +149,12 @@ export default function EndIsNearMainMenu() {
 														Master volume
 													</Label>
 													<span className="text-sm tabular-nums text-muted-foreground">
-														{masterVolume[0]}%
+														{gameSettings.volume}%
 													</span>
 												</div>
 												<Slider
 													id="master-volume"
-													value={masterVolume}
+													value={[gameSettings.volume]}
 													onValueChange={setMasterVolume}
 													min={0}
 													max={100}
@@ -164,8 +179,8 @@ export default function EndIsNearMainMenu() {
 													</p>
 												</div>
 												<Switch
-													checked={fullscreen}
-													onCheckedChange={setFullscreen}
+													checked={gameSettings.isFullscreen}
+													onCheckedChange={setIsFullScreen}
 												/>
 											</div>
 										</div>
@@ -173,41 +188,10 @@ export default function EndIsNearMainMenu() {
 										<Separator />
 
 										{/* Gameplay */}
-										<div className="space-y-3">
-											<div className="flex items-center gap-2">
-												<Skull className="h-4 w-4 text-muted-foreground" />
-												<h3 className="text-sm font-medium">Gameplay</h3>
-											</div>
-											<div className="space-y-2">
-												<Label className="text-sm text-muted-foreground">
-													Difficulty
-												</Label>
-												<Select
-													value={difficulty}
-													onValueChange={setDifficulty}
-												>
-													<SelectTrigger>
-														<SelectValue placeholder="Select difficulty" />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="story">Story</SelectItem>
-														<SelectItem value="normal">Normal</SelectItem>
-														<SelectItem value="hard">Hard</SelectItem>
-														<SelectItem value="nightmare">Nightmare</SelectItem>
-													</SelectContent>
-												</Select>
-											</div>
-										</div>
 
 										<div className="flex justify-end gap-2">
-											<Button
-												variant="secondary"
-												onClick={() => console.log("Settings reset")}
-											>
+											<Button variant="secondary" onClick={resetSettings}>
 												Reset
-											</Button>
-											<Button onClick={() => console.log("Settings saved")}>
-												Save
 											</Button>
 										</div>
 									</div>
