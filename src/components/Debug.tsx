@@ -5,8 +5,8 @@ interface DebugProps {
 
 export const DebugStuff: React.FC<DebugProps> = ({ object }) => {
 	return (
-		<code className="rounded bg-muted px-1 py-0.5">
+		<pre className="text-xs overflow-auto bg-background p-4 border-2 border-muted">
 			{JSON.stringify(object, null, 2)}
-		</code>
+		</pre>
 	);
 };
