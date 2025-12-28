@@ -7,6 +7,7 @@ import {
 	Volume2,
 } from "lucide-react";
 import * as React from "react";
+import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -43,16 +44,22 @@ type MenuAction =
 	| { type: "open_about" };
 
 export default function EndIsNearMainMenu() {
-	const [hasSave] = React.useState<boolean>(true);
+	const [hasSave] = React.useState<boolean>(false);
 
-	// Settings state (local UI only; wire to your game state/store)
+	// Settings state - Externalize into the local storage
 	const [masterVolume, setMasterVolume] = React.useState<number[]>([70]);
 	const [fullscreen, setFullscreen] = React.useState<boolean>(true);
 	const [difficulty, setDifficulty] = React.useState<string>("normal");
 
+	//TODO: Remove this dispatch mechanism
 	const dispatch = React.useCallback((action: MenuAction) => {
 		console.log("MENU_ACTION", action);
 	}, []);
+
+	const navigate = useNavigate();
+	const newGameClicked = () => {
+		navigate("/newGame");
+	};
 
 	return (
 		<CenteredPageContainer>
@@ -75,11 +82,7 @@ export default function EndIsNearMainMenu() {
 						</p>
 
 						<div className="mt-8 flex flex-wrap gap-3">
-							<Button
-								size="lg"
-								className="gap-2"
-								onClick={() => dispatch({ type: "start" })}
-							>
+							<Button size="lg" className="gap-2" onClick={newGameClicked}>
 								<Play className="h-4 w-4" />
 								New Game
 							</Button>
