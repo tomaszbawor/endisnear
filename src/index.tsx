@@ -1,25 +1,12 @@
-import { Atom, useAtomSet, useAtomValue } from "@effect-atom/atom-react";
-import type { FC } from "react";
-
+import { createRoot } from "react-dom/client";
 import "./styles/globals.css";
-import CharacterPage from "./components/features/CharacterPage";
-import { Button } from "./components/ui/button";
+import { RouterProvider } from "react-router";
+import { appRouter } from "./router";
 
-const countValueAtom = Atom.make(0);
+const root = document.getElementById("root");
 
-export const IndexPage: FC = () => {
-	const countValue = useAtomValue(countValueAtom);
-	const setCountValue = useAtomSet(countValueAtom);
+if (!root) {
+	throw new Error("Root container not found");
+}
 
-	const onclick = () => {
-		setCountValue((num) => num + 1);
-	};
-
-	return (
-		<div className="container">
-			<Button onClick={onclick}>Number: {countValue}</Button>
-
-			<CharacterPage />
-		</div>
-	);
-};
+createRoot(root).render(<RouterProvider router={appRouter} />);

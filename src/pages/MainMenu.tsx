@@ -1,3 +1,4 @@
+import { useAtomSet, useAtomValue } from "@effect-atom/atom-react";
 import {
 	Info,
 	Monitor,
@@ -7,14 +8,9 @@ import {
 	Volume2,
 } from "lucide-react";
 import * as React from "react";
+import { useNavigate } from "react-router";
+import CenteredPageContainer from "@/components/custom/CenteredPageContainer";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -24,16 +20,10 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { gameConfigAtom } from "@/state/gameConfig";
 
 type MenuAction =
 	| { type: "start" }
@@ -42,28 +32,47 @@ type MenuAction =
 	| { type: "open_about" };
 
 export default function EndIsNearMainMenu() {
-	const [hasSave] = React.useState<boolean>(true);
+	const [hasSave] = React.useState<boolean>(false);
 
-	// Settings state (local UI only; wire to your game state/store)
-	const [masterVolume, setMasterVolume] = React.useState<number[]>([70]);
-	const [fullscreen, setFullscreen] = React.useState<boolean>(true);
-	const [difficulty, setDifficulty] = React.useState<string>("normal");
+	//TODO: Move settings dialog to component
+	const gameSettings = useAtomValue(gameConfigAtom);
+	const setGameSettings = useAtomSet(gameConfigAtom);
 
+	const setMasterVolume = (vol: [number]) => {
+		setGameSettings({
+			...gameSettings,
+			volume: vol[0],
+		});
+	};
+
+	const setIsFullScreen = (isFullscreen: boolean) => {
+		setGameSettings({
+			...gameSettings,
+			isFullscreen: isFullscreen,
+		});
+	};
+
+	const resetSettings = () => {
+		setGameSettings({
+			volume: 50,
+			isFullscreen: false,
+		});
+	};
+
+	//TODO: Remove this dispatch mechanism
 	const dispatch = React.useCallback((action: MenuAction) => {
 		console.log("MENU_ACTION", action);
 	}, []);
 
-	return (
-		<div className="relative min-h-screen w-full overflow-hidden bg-background">
-			{/* Ambient background */}
-			<div className="pointer-events-none absolute inset-0">
-				<div className="absolute -top-24 left-1/2 h-72 w-[42rem] -translate-x-1/2 rounded-full bg-foreground/5 blur-3xl" />
-				<div className="absolute bottom-[-8rem] right-[-8rem] h-72 w-72 rounded-full bg-foreground/5 blur-3xl" />
-				<div className="absolute inset-0 [background:radial-gradient(circle_at_center,transparent_0,transparent_40%,hsl(var(--background))_72%)]" />
-			</div>
+	const navigate = useNavigate();
+	const newGameClicked = () => {
+		navigate("/newGame");
+	};
 
-			<main className="relative mx-auto flex min-h-screen max-w-5xl items-center justify-center px-6 py-14">
-				<div className="grid w-full gap-8 md:grid-cols-[1.2fr_0.8fr]">
+	return (
+		<CenteredPageContainer>
+			<main className="relative flex items-center justify-center px-6 py-14">
+				<div>
 					{/* Title / Flavor */}
 					<section className="flex flex-col justify-center">
 						<div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
@@ -80,12 +89,8 @@ export default function EndIsNearMainMenu() {
 							You have one life, use it.
 						</p>
 
-						<div className="mt-8 flex flex-wrap gap-3">
-							<Button
-								size="lg"
-								className="gap-2"
-								onClick={() => dispatch({ type: "start" })}
-							>
+						<div className="mt-8 flex flex-col flex-wrap gap-3">
+							<Button size="lg" className="gap-2" onClick={newGameClicked}>
 								<Play className="h-4 w-4" />
 								New Game
 							</Button>
@@ -137,12 +142,12 @@ export default function EndIsNearMainMenu() {
 														Master volume
 													</Label>
 													<span className="text-sm tabular-nums text-muted-foreground">
-														{masterVolume[0]}%
+														{gameSettings.volume}%
 													</span>
 												</div>
 												<Slider
 													id="master-volume"
-													value={masterVolume}
+													value={[gameSettings.volume]}
 													onValueChange={setMasterVolume}
 													min={0}
 													max={100}
@@ -167,8 +172,8 @@ export default function EndIsNearMainMenu() {
 													</p>
 												</div>
 												<Switch
-													checked={fullscreen}
-													onCheckedChange={setFullscreen}
+													checked={gameSettings.isFullscreen}
+													onCheckedChange={setIsFullScreen}
 												/>
 											</div>
 										</div>
@@ -176,41 +181,10 @@ export default function EndIsNearMainMenu() {
 										<Separator />
 
 										{/* Gameplay */}
-										<div className="space-y-3">
-											<div className="flex items-center gap-2">
-												<Skull className="h-4 w-4 text-muted-foreground" />
-												<h3 className="text-sm font-medium">Gameplay</h3>
-											</div>
-											<div className="space-y-2">
-												<Label className="text-sm text-muted-foreground">
-													Difficulty
-												</Label>
-												<Select
-													value={difficulty}
-													onValueChange={setDifficulty}
-												>
-													<SelectTrigger>
-														<SelectValue placeholder="Select difficulty" />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="story">Story</SelectItem>
-														<SelectItem value="normal">Normal</SelectItem>
-														<SelectItem value="hard">Hard</SelectItem>
-														<SelectItem value="nightmare">Nightmare</SelectItem>
-													</SelectContent>
-												</Select>
-											</div>
-										</div>
 
 										<div className="flex justify-end gap-2">
-											<Button
-												variant="secondary"
-												onClick={() => console.log("Settings reset")}
-											>
+											<Button variant="secondary" onClick={resetSettings}>
 												Reset
-											</Button>
-											<Button onClick={() => console.log("Settings saved")}>
-												Save
 											</Button>
 										</div>
 									</div>
@@ -247,52 +221,8 @@ export default function EndIsNearMainMenu() {
 							</Dialog>
 						</div>
 					</section>
-
-					{/* Side panel */}
-					<aside className="flex items-center">
-						<Card className="w-full">
-							<CardHeader>
-								<CardTitle className="text-base">Session</CardTitle>
-								<CardDescription>Quick status and last save.</CardDescription>
-							</CardHeader>
-							<CardContent className="space-y-4">
-								<div className="rounded-lg border p-3">
-									<div className="flex items-center justify-between">
-										<p className="text-sm font-medium">Save slot</p>
-										<p className="text-sm text-muted-foreground">
-											{hasSave ? "01" : "—"}
-										</p>
-									</div>
-									<Separator className="my-3" />
-									<div className="space-y-1 text-sm text-muted-foreground">
-										<div className="flex items-center justify-between">
-											<span>Location</span>
-											<span className="text-foreground">Ash District</span>
-										</div>
-										<div className="flex items-center justify-between">
-											<span>Cycle</span>
-											<span className="text-foreground">Nightfall</span>
-										</div>
-										<div className="flex items-center justify-between">
-											<span>Time played</span>
-											<span className="text-foreground">02:13:44</span>
-										</div>
-									</div>
-								</div>
-
-								<div className="rounded-lg border p-3">
-									<p className="text-sm font-medium">Recommended</p>
-									<p className="mt-1 text-sm text-muted-foreground">
-										For first run, start on{" "}
-										<span className="text-foreground">Normal</span>. You can
-										raise difficulty after you learn routes.
-									</p>
-								</div>
-							</CardContent>
-						</Card>
-					</aside>
 				</div>
 			</main>
-		</div>
+		</CenteredPageContainer>
 	);
 }
