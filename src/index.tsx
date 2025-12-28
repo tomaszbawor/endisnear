@@ -16,8 +16,11 @@ export const IndexPage: FC = () => {
 	};
 
 	return (
-		<div className="container">
-			<Button onClick={onclick}>Number: {countValue}</Button>
+		<div className="container min-h-screen flex flex-col gap-8">
+			<div className="border-4 border-primary p-6 bg-card shadow-[8px_8px_0px_0px_rgba(0,255,65,0.3)]">
+				<h1 className="text-2xl mb-6 text-primary">End Is Near</h1>
+				<Button onClick={onclick}>Number: {countValue}</Button>
+			</div>
 
 			<CharacterPage />
 		</div>
