@@ -12,13 +12,6 @@ import { useNavigate } from "react-router";
 import CenteredPageContainer from "@/components/custom/CenteredPageContainer";
 import { Button } from "@/components/ui/button";
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
@@ -79,7 +72,7 @@ export default function EndIsNearMainMenu() {
 	return (
 		<CenteredPageContainer>
 			<main className="relative flex items-center justify-center px-6 py-14">
-				<div className="grid gap-8 md:grid-cols-[1.2fr_0.8fr]">
+				<div>
 					{/* Title / Flavor */}
 					<section className="flex flex-col justify-center">
 						<div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
@@ -96,7 +89,7 @@ export default function EndIsNearMainMenu() {
 							You have one life, use it.
 						</p>
 
-						<div className="mt-8 flex flex-wrap gap-3">
+						<div className="mt-8 flex flex-col flex-wrap gap-3">
 							<Button size="lg" className="gap-2" onClick={newGameClicked}>
 								<Play className="h-4 w-4" />
 								New Game
@@ -228,50 +221,6 @@ export default function EndIsNearMainMenu() {
 							</Dialog>
 						</div>
 					</section>
-
-					{/* Side panel */}
-					<aside className="flex items-center">
-						<Card className="w-full">
-							<CardHeader>
-								<CardTitle className="text-base">Session</CardTitle>
-								<CardDescription>Quick status and last save.</CardDescription>
-							</CardHeader>
-							<CardContent className="space-y-4">
-								<div className="rounded-lg border p-3">
-									<div className="flex items-center justify-between">
-										<p className="text-sm font-medium">Save slot</p>
-										<p className="text-sm text-muted-foreground">
-											{hasSave ? "01" : "—"}
-										</p>
-									</div>
-									<Separator className="my-3" />
-									<div className="space-y-1 text-sm text-muted-foreground">
-										<div className="flex items-center justify-between">
-											<span>Location</span>
-											<span className="text-foreground">Ash District</span>
-										</div>
-										<div className="flex items-center justify-between">
-											<span>Cycle</span>
-											<span className="text-foreground">Nightfall</span>
-										</div>
-										<div className="flex items-center justify-between">
-											<span>Time played</span>
-											<span className="text-foreground">02:13:44</span>
-										</div>
-									</div>
-								</div>
-
-								<div className="rounded-lg border p-3">
-									<p className="text-sm font-medium">Recommended</p>
-									<p className="mt-1 text-sm text-muted-foreground">
-										For first run, start on{" "}
-										<span className="text-foreground">Normal</span>. You can
-										raise difficulty after you learn routes.
-									</p>
-								</div>
-							</CardContent>
-						</Card>
-					</aside>
 				</div>
 			</main>
 		</CenteredPageContainer>
