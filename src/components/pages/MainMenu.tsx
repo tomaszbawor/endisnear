@@ -34,6 +34,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import CenteredPageContainer from "../custom/CenteredPageContainer";
 
 type MenuAction =
 	| { type: "start" }
@@ -54,16 +55,9 @@ export default function EndIsNearMainMenu() {
 	}, []);
 
 	return (
-		<div className="relative min-h-screen w-full overflow-hidden bg-background">
-			{/* Ambient background */}
-			<div className="pointer-events-none absolute inset-0">
-				<div className="absolute -top-24 left-1/2 h-72 w-[42rem] -translate-x-1/2 rounded-full bg-foreground/5 blur-3xl" />
-				<div className="absolute bottom-[-8rem] right-[-8rem] h-72 w-72 rounded-full bg-foreground/5 blur-3xl" />
-				<div className="absolute inset-0 [background:radial-gradient(circle_at_center,transparent_0,transparent_40%,hsl(var(--background))_72%)]" />
-			</div>
-
-			<main className="relative mx-auto flex min-h-screen max-w-5xl items-center justify-center px-6 py-14">
-				<div className="grid w-full gap-8 md:grid-cols-[1.2fr_0.8fr]">
+		<CenteredPageContainer>
+			<main className="relative flex items-center justify-center px-6 py-14">
+				<div className="grid gap-8 md:grid-cols-[1.2fr_0.8fr]">
 					{/* Title / Flavor */}
 					<section className="flex flex-col justify-center">
 						<div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
@@ -293,6 +287,6 @@ export default function EndIsNearMainMenu() {
 					</aside>
 				</div>
 			</main>
-		</div>
+		</CenteredPageContainer>
 	);
 }
