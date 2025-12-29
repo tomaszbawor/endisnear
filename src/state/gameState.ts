@@ -10,29 +10,29 @@ import {
 /**
  * Player stats atom - level, exp, base stats
  */
-export const playerStatsAtom = Atom.make<PlayerStats>({
-	level: 1,
-	currentExp: 0,
-	expToNextLevel: 100,
-	baseStats: {
-		attack: 10,
-		defense: 5,
-		health: 100,
-		speed: 10,
-		strength: 5,
-		dexterity: 5,
-		intelligence: 5,
-	},
-	totalStats: {
-		attack: 10,
-		defense: 5,
-		health: 100,
-		speed: 10,
-		strength: 5,
-		dexterity: 5,
-		intelligence: 5,
-	},
-});
+// export const playerStatsAtom = Atom.make<PlayerStats>({
+// 	level: 1,
+// 	currentExp: 0,
+// 	expToNextLevel: 100,
+// 	baseStats: {
+// 		attack: 10,
+// 		defense: 5,
+// 		health: 100,
+// 		speed: 10,
+// 		strength: 5,
+// 		dexterity: 5,
+// 		intelligence: 5,
+// 	},
+// 	totalStats: {
+// 		attack: 10,
+// 		defense: 5,
+// 		health: 100,
+// 		speed: 10,
+// 		strength: 5,
+// 		dexterity: 5,
+// 		intelligence: 5,
+// 	},
+// });
 
 /**
  * Equipped items atom - current equipment in each slot

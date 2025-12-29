@@ -96,6 +96,9 @@ export function BattleView({
 	const setDeathState = useAtomSet(deathStateAtom);
 
 	const turnSpeed = 500; // Fixed turn speed for auto-battle
+	const handledBattleIdRef = React.useRef<number | null>(null);
+	const onPlayerDeathRef = React.useRef(onPlayerDeath);
+	const onMonsterDefeatedRef = React.useRef(onMonsterDefeated);
 
 	// Get random monster from current location
 	const getRandomMonster = React.useCallback((): MonsterData | null => {
@@ -153,6 +156,14 @@ export function BattleView({
 		setBattleState,
 	]);
 
+	const startNewBattleRef = React.useRef(startNewBattle);
+
+	React.useEffect(() => {
+		onPlayerDeathRef.current = onPlayerDeath;
+		onMonsterDefeatedRef.current = onMonsterDefeated;
+		startNewBattleRef.current = startNewBattle;
+	}, [onPlayerDeath, onMonsterDefeated, startNewBattle]);
+
 	// Start initial battle on mount or location change
 	React.useEffect(() => {
 		if (!battleState?.isRunning) {
@@ -174,13 +185,19 @@ export function BattleView({
 		}
 
 		const battle = battleEntities.battleSystem;
-		let battleLoopFiber: Fiber.RuntimeFiber<number, never> | null = null;
+		let battleLoopFiber: Fiber.RuntimeFiber<unknown, never> | null = null;
 		let eventStreamFiber: Fiber.RuntimeFiber<void, never> | null = null;
 
 		// Battle loop
 		const battleLoop = Effect.gen(function* () {
+			const battleId = battleState?.battleId ?? null;
 			const finished = yield* battle.isFinished();
 			if (finished) {
+				if (handledBattleIdRef.current === battleId) {
+					return true;
+				}
+				handledBattleIdRef.current = battleId;
+
 				// Check who won
 				const heroAlive = battleEntities.hero
 					? battleEntities.hero.combatStats.health > 0
@@ -195,7 +212,7 @@ export function BattleView({
 						isDead: true,
 						deathTime: Date.now(),
 					});
-					onPlayerDeath();
+					onPlayerDeathRef.current();
 
 					// Wait 5 seconds then revive and start new battle
 					setTimeout(() => {
@@ -204,7 +221,7 @@ export function BattleView({
 							deathTime: null,
 						});
 						// Start new battle after revival
-						startNewBattle();
+						startNewBattleRef.current();
 					}, 5000);
 				} else if (!monsterAlive) {
 					// Monster defeated - get rewards
@@ -215,15 +232,15 @@ export function BattleView({
 					const gold =
 						Math.floor(Math.random() * (goldMax - goldMin + 1)) + goldMin;
 
-					onMonsterDefeated(exp, gold);
+					onMonsterDefeatedRef.current(exp, gold);
 
-					// Auto-start new battle after short delay
-					// setTimeout(() => {
-					// 	startNewBattle();
-					// }, 1500);
+					//		Auto-start new battle after short delay
+					setTimeout(() => {
+						startNewBattle();
+					}, 1500);
 				}
 
-				return yield* Effect.interrupt;
+				return true;
 			}
 
 			const waitingForInput = yield* battle.isWaitingForPlayerInput();
@@ -232,7 +249,15 @@ export function BattleView({
 			} else {
 				yield* battle.tick();
 			}
-		}).pipe(Effect.repeat(Schedule.spaced(Duration.millis(turnSpeed))));
+
+			return false;
+		}).pipe(
+			Effect.repeat(
+				Schedule.spaced(Duration.millis(turnSpeed)).pipe(
+					Schedule.intersect(Schedule.recurWhile((finished) => !finished)),
+				),
+			),
+		);
 
 		// Event stream
 		const eventStream = Stream.runForEach(battle.getEventStream(), (event) =>
@@ -256,14 +281,13 @@ export function BattleView({
 		};
 	}, [
 		battleState?.isRunning,
+		battleState?.battleId,
 		battleEntities.battleSystem,
 		battleEntities.hero,
 		battleEntities.monster,
 		setBattleEvents,
 		setLogIdCounter,
 		setDeathState,
-		onPlayerDeath,
-		onMonsterDefeated,
 		startNewBattle,
 	]);
 

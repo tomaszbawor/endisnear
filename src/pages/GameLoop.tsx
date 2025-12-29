@@ -10,7 +10,6 @@ import {
 	goldAtom,
 	inventoryAtom,
 	lastShopRotationAtom,
-	playerStatsAtom,
 	shopItemsAtom,
 } from "@/state/gameState";
 import { currentPlayerAtom } from "@/state/playerState";
@@ -50,7 +49,7 @@ function calculateTotalStats(equipment: Record<string, Item | undefined>) {
 
 export default function GameLoopPage() {
 	const currentView = useAtomValue(currentViewAtom);
-	const playerStats = useAtomValue(playerStatsAtom);
+	const playerStats = useAtomValue(currentPlayerAtom);
 	const equippedItems = useAtomValue(equippedItemsAtom);
 	const inventory = useAtomValue(inventoryAtom);
 	const gold = useAtomValue(goldAtom);
@@ -61,7 +60,7 @@ export default function GameLoopPage() {
 	const setCurrentView = useAtomSet(currentViewAtom);
 	const setEquippedItems = useAtomSet(equippedItemsAtom);
 	const setInventory = useAtomSet(inventoryAtom);
-	const setPlayerStats = useAtomSet(playerStatsAtom);
+	const setPlayerStats = useAtomSet(currentPlayerAtom);
 	const setGold = useAtomSet(goldAtom);
 	const setShopItems = useAtomSet(shopItemsAtom);
 	const setLastShopRotation = useAtomSet(lastShopRotationAtom);

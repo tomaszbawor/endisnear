@@ -1,4 +1,4 @@
-import { useAtomValue } from "@effect-atom/atom-react";
+import { Atom, useAtomValue } from "@effect-atom/atom-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { currentPlayerAtom } from "@/state/playerState";
@@ -8,9 +8,15 @@ interface CharacterStatsProps {
 	stats: PlayerStats;
 }
 
-export function CharacterStats({ stats }: CharacterStatsProps) {
-	const expPercentage = (stats.currentExp / stats.expToNextLevel) * 100;
+const expPercentageAtom = Atom.make((get) => {
+	const hero = get(currentPlayerAtom);
+	if (!hero) return 0;
 
+	return (hero?.currentExp / hero?.expToNextLevel) * 100;
+});
+
+export function CharacterStats({ stats }: CharacterStatsProps) {
+	const expPercentage = useAtomValue(expPercentageAtom);
 	const hero = useAtomValue(currentPlayerAtom);
 
 	return (
@@ -24,7 +30,7 @@ export function CharacterStats({ stats }: CharacterStatsProps) {
 					<div className="flex justify-between text-sm mb-1">
 						<span className="font-semibold">Level {stats.level}</span>
 						<span className="text-muted-foreground">
-							{stats.currentExp} / {stats.expToNextLevel} EXP
+							{hero?.currentExp} / {hero?.expToNextLevel} EXP
 						</span>
 					</div>
 					<Progress value={expPercentage} max={100} />
