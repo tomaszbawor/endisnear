@@ -1,4 +1,4 @@
-import { Effect, Ref, Stream } from "effect";
+import { Effect, Queue, Ref, type Stream } from "effect";
 import { BattleAlreadyFinishedError } from "./battle-errors";
 import type { BattleEvent } from "./battle-events";
 import { BattleAction, BattleFSM, BattleState } from "./battle-fsm";
@@ -23,13 +23,6 @@ export class BattleSystem {
 		return Effect.gen(function* () {
 			const fsm = yield* BattleFSM.make(player, enemy, enemy.expReward);
 			const eventsRef = yield* Ref.make<BattleEvent[]>([]);
-
-			const eventStream = Stream.fromQueue(fsm.eventQueue);
-			yield* Effect.fork(
-				Stream.runForEach(eventStream, (event) =>
-					Ref.update(eventsRef, (events) => [...events, event]),
-				),
-			);
 
 			return new BattleSystem(fsm, eventsRef);
 		});
@@ -107,7 +100,16 @@ export class BattleSystem {
 	}
 
 	getEvents(): Effect.Effect<BattleEvent[]> {
-		return Ref.get(this.eventsRef);
+		const fsm = this.fsm;
+		const eventsRef = this.eventsRef;
+		return Effect.gen(function* () {
+			// Drain all available events from the queue
+			const newEvents = yield* Queue.takeAll(fsm.eventQueue);
+			if (newEvents.length > 0) {
+				yield* Ref.update(eventsRef, (events) => [...events, ...newEvents]);
+			}
+			return yield* Ref.get(eventsRef);
+		});
 	}
 
 	getResult(): Effect.Effect<BattleResult, BattleAlreadyFinishedError> {

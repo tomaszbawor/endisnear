@@ -61,11 +61,8 @@ export default function BattleTestPage() {
 
 	const addLog = (message: string) => {
 		const id = logIdCounter.current++;
-		setBattleLog((prev) =>
-			[...prev, `${id}|[${new Date().toLocaleTimeString()}] ${message}`].slice(
-				-20,
-			),
-		); // Keep last 20 logs
+		const logEntry = `${id}|[${new Date().toLocaleTimeString()}] ${message}`;
+		setBattleLog((prev) => [...prev, logEntry].slice(-20)); // Keep last 20 logs
 	};
 
 	const handleEventLog = (event: BattleEvent) => {
@@ -167,24 +164,7 @@ export default function BattleTestPage() {
 
 				Effect.runPromise(
 					Effect.gen(function* () {
-						const finished = yield* battle.isFinished();
-						if (finished) {
-							if (intervalRef.current) {
-								clearInterval(intervalRef.current);
-								intervalRef.current = null;
-							}
-							setIsRunning(false);
-							// Log remaining events
-							const events = yield* battle.getEvents();
-							for (let i = lastEventCount; i < events.length; i++) {
-								const event = events[i];
-								if (event) {
-									handleEventLog(event);
-								}
-							}
-							return;
-						}
-
+						// First, process the turn
 						const waitingForInput = yield* battle.isWaitingForPlayerInput();
 						if (waitingForInput) {
 							yield* battle.playerAttack();
@@ -192,7 +172,7 @@ export default function BattleTestPage() {
 							yield* battle.tick();
 						}
 
-						// Get and process new events during battle
+						// Then get and process new events
 						const events = yield* battle.getEvents();
 						for (let i = lastEventCount; i < events.length; i++) {
 							const event = events[i];
@@ -201,6 +181,16 @@ export default function BattleTestPage() {
 							}
 						}
 						lastEventCount = events.length;
+
+						// Check if battle finished
+						const finished = yield* battle.isFinished();
+						if (finished) {
+							if (intervalRef.current) {
+								clearInterval(intervalRef.current);
+								intervalRef.current = null;
+							}
+							setIsRunning(false);
+						}
 
 						// Force UI update
 						forceRender();
