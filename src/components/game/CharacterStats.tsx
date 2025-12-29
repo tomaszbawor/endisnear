@@ -1,0 +1,76 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import type { PlayerStats } from "@/types/equipment";
+
+interface CharacterStatsProps {
+	stats: PlayerStats;
+}
+
+export function CharacterStats({ stats }: CharacterStatsProps) {
+	const expPercentage = (stats.currentExp / stats.expToNextLevel) * 100;
+
+	return (
+		<Card>
+			<CardHeader>
+				<CardTitle className="text-lg">Character</CardTitle>
+			</CardHeader>
+			<CardContent className="space-y-3">
+				{/* Level & EXP */}
+				<div>
+					<div className="flex justify-between text-sm mb-1">
+						<span className="font-semibold">Level {stats.level}</span>
+						<span className="text-muted-foreground">
+							{stats.currentExp} / {stats.expToNextLevel} EXP
+						</span>
+					</div>
+					<Progress value={expPercentage} max={100} />
+				</div>
+
+				{/* Stats Grid */}
+				<div className="grid grid-cols-2 gap-2 text-sm">
+					<StatItem icon="⚔️" label="ATK" value={stats.totalStats.attack ?? 0} />
+					<StatItem
+						icon="🛡️"
+						label="DEF"
+						value={stats.totalStats.defense ?? 0}
+					/>
+					<StatItem icon="❤️" label="HP" value={stats.totalStats.health ?? 0} />
+					<StatItem icon="⚡" label="SPD" value={stats.totalStats.speed ?? 0} />
+					<StatItem
+						icon="💪"
+						label="STR"
+						value={stats.totalStats.strength ?? 0}
+					/>
+					<StatItem
+						icon="🎯"
+						label="DEX"
+						value={stats.totalStats.dexterity ?? 0}
+					/>
+					<StatItem
+						icon="🧠"
+						label="INT"
+						value={stats.totalStats.intelligence ?? 0}
+					/>
+				</div>
+			</CardContent>
+		</Card>
+	);
+}
+
+function StatItem({
+	icon,
+	label,
+	value,
+}: {
+	icon: string;
+	label: string;
+	value: number;
+}) {
+	return (
+		<div className="flex items-center gap-1">
+			<span>{icon}</span>
+			<span className="text-muted-foreground">{label}:</span>
+			<span className="font-semibold">{value}</span>
+		</div>
+	);
+}
