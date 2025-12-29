@@ -106,6 +106,10 @@ export class BattleSystem {
 		return this.fsm.isFinished();
 	}
 
+	getEvents(): Effect.Effect<BattleEvent[]> {
+		return Ref.get(this.eventsRef);
+	}
+
 	getResult(): Effect.Effect<BattleResult, BattleAlreadyFinishedError> {
 		return Effect.gen(this, function* () {
 			const isFinished = yield* this.fsm.isFinished();

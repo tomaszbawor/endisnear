@@ -50,8 +50,9 @@ export default function BattleTestPage() {
 
 	const battleSystemRef = React.useRef<BattleSystem | null>(null);
 	const intervalRef = React.useRef<NodeJS.Timeout | null>(null);
-	const heroRef = React.useRef<Hero>(new Hero());
+	const heroRef = React.useRef<Hero | null>(null);
 	const monsterRef = React.useRef<Monster | null>(null);
+	const battleIdRef = React.useRef<number>(0);
 
 	// Monster list for selection
 	const monsterList = Object.keys(MONSTER_TEMPLATES);
@@ -109,6 +110,19 @@ export default function BattleTestPage() {
 	const startBattle = async () => {
 		if (isRunning) return;
 
+		// Clear any existing interval
+		if (intervalRef.current) {
+			clearInterval(intervalRef.current);
+			intervalRef.current = null;
+		}
+
+		// Increment battle ID to invalidate old battle instances
+		battleIdRef.current += 1;
+		const currentBattleId = battleIdRef.current;
+
+		// Clear old battle reference
+		battleSystemRef.current = null;
+
 		// Reset hero and create new monster
 		const newHero = new Hero();
 		const newMonster = new Monster(
@@ -130,24 +144,40 @@ export default function BattleTestPage() {
 			});
 
 			const battle = await Effect.runPromise(program);
+
+			// Check if this battle is still the current one
+			if (currentBattleId !== battleIdRef.current) {
+				return; // A newer battle has started, abandon this one
+			}
+
 			battleSystemRef.current = battle;
 
 			let lastEventCount = 0;
 
 			// Auto-play battle with turns
 			intervalRef.current = setInterval(() => {
+				// Check if this is still the current battle
+				if (currentBattleId !== battleIdRef.current) {
+					if (intervalRef.current) {
+						clearInterval(intervalRef.current);
+						intervalRef.current = null;
+					}
+					return;
+				}
+
 				Effect.runPromise(
 					Effect.gen(function* () {
 						const finished = yield* battle.isFinished();
 						if (finished) {
 							if (intervalRef.current) {
 								clearInterval(intervalRef.current);
+								intervalRef.current = null;
 							}
 							setIsRunning(false);
-							const result = yield* battle.getResult();
 							// Log remaining events
-							for (let i = lastEventCount; i < result.events.length; i++) {
-								const event = result.events[i];
+							const events = yield* battle.getEvents();
+							for (let i = lastEventCount; i < events.length; i++) {
+								const event = events[i];
 								if (event) {
 									handleEventLog(event);
 								}
@@ -162,25 +192,29 @@ export default function BattleTestPage() {
 							yield* battle.tick();
 						}
 
-						// Get and process new events
-						const result = yield* battle.getResult();
-						for (let i = lastEventCount; i < result.events.length; i++) {
-							const event = result.events[i];
+						// Get and process new events during battle
+						const events = yield* battle.getEvents();
+						for (let i = lastEventCount; i < events.length; i++) {
+							const event = events[i];
 							if (event) {
 								handleEventLog(event);
 							}
 						}
-						lastEventCount = result.events.length;
+						lastEventCount = events.length;
 
 						// Force UI update
 						forceRender();
 					}),
 				).catch((error) => {
-					console.error("Battle error:", error);
-					if (intervalRef.current) {
-						clearInterval(intervalRef.current);
+					// Only log errors for the current battle
+					if (currentBattleId === battleIdRef.current) {
+						console.error("Battle error:", error);
+						if (intervalRef.current) {
+							clearInterval(intervalRef.current);
+							intervalRef.current = null;
+						}
+						setIsRunning(false);
 					}
-					setIsRunning(false);
 				});
 			}, turnSpeed);
 		} catch (error) {
@@ -192,6 +226,7 @@ export default function BattleTestPage() {
 	const stopBattle = () => {
 		if (intervalRef.current) {
 			clearInterval(intervalRef.current);
+			intervalRef.current = null;
 		}
 		setIsRunning(false);
 	};
@@ -274,29 +309,37 @@ export default function BattleTestPage() {
 				<Card>
 					<CardHeader>
 						<CardTitle className="text-primary">
-							🦸 {heroRef.current.name}
+							🦸 {heroRef.current?.name ?? "Hero"}
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-2">
-						<div>
-							<div className="flex justify-between text-sm mb-1">
-								<span>Health</span>
-								<span>
-									{heroRef.current.combatStats.health}/
-									{heroRef.current.combatStats.maxHealth}
-								</span>
+						{heroRef.current ? (
+							<>
+								<div>
+									<div className="flex justify-between text-sm mb-1">
+										<span>Health</span>
+										<span>
+											{heroRef.current.combatStats.health}/
+											{heroRef.current.combatStats.maxHealth}
+										</span>
+									</div>
+									<Progress
+										value={heroRef.current.combatStats.health}
+										max={heroRef.current.combatStats.maxHealth}
+									/>
+								</div>
+								<div className="grid grid-cols-2 gap-2 text-sm">
+									<div>⚔️ ATK: {heroRef.current.combatStats.attack}</div>
+									<div>🛡️ DEF: {heroRef.current.combatStats.defense}</div>
+									<div>⚡ SPD: {heroRef.current.combatStats.speed}</div>
+									<div>💪 STR: {heroRef.current.stats.strength}</div>
+								</div>
+							</>
+						) : (
+							<div className="text-muted-foreground text-center py-8">
+								Ready to battle!
 							</div>
-							<Progress
-								value={heroRef.current.combatStats.health}
-								max={heroRef.current.combatStats.maxHealth}
-							/>
-						</div>
-						<div className="grid grid-cols-2 gap-2 text-sm">
-							<div>⚔️ ATK: {heroRef.current.combatStats.attack}</div>
-							<div>🛡️ DEF: {heroRef.current.combatStats.defense}</div>
-							<div>⚡ SPD: {heroRef.current.combatStats.speed}</div>
-							<div>💪 STR: {heroRef.current.stats.strength}</div>
-						</div>
+						)}
 					</CardContent>
 				</Card>
 
