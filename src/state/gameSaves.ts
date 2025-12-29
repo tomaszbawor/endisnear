@@ -21,6 +21,14 @@ const gameSavesAtom = Atom.kvs({
 	},
 });
 
+/**
+ * Computed atom that checks if any save slot has a saved game
+ */
+export const hasSaveAtom = Atom.readable((get) => {
+	const saves = get(gameSavesAtom);
+	return saves.some((save) => save !== null);
+});
+
 export const useSavesValues = () => {
 	return useAtomValue(gameSavesAtom);
 };

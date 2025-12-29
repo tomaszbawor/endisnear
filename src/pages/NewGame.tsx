@@ -1,5 +1,5 @@
+import { Atom, useAtomSet, useAtomValue } from "@effect-atom/atom-react";
 import { Plus, Save } from "lucide-react";
-import { useState } from "react";
 import { useNavigate } from "react-router";
 import CenteredPageContainer from "@/components/custom/CenteredPageContainer";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,13 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useSavesValues } from "@/state/gameSaves";
 
+// Local atom for selected save slot
+const selectedSlotAtom = Atom.make<number | null>(null);
+
 export default function NewGamePage() {
 	const navigate = useNavigate();
-	const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
+	const selectedSlot = useAtomValue(selectedSlotAtom);
+	const setSelectedSlot = useAtomSet(selectedSlotAtom);
 
 	const gameSaves = useSavesValues();
 

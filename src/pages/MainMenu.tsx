@@ -24,6 +24,7 @@ import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { gameConfigAtom } from "@/state/gameConfig";
+import { hasSaveAtom } from "@/state/gameSaves";
 
 type MenuAction =
 	| { type: "start" }
@@ -32,7 +33,8 @@ type MenuAction =
 	| { type: "open_about" };
 
 export default function EndIsNearMainMenu() {
-	const [hasSave] = React.useState<boolean>(false);
+	// Use computed atom to check if any save exists
+	const hasSave = useAtomValue(hasSaveAtom);
 
 	//TODO: Move settings dialog to component
 	const gameSettings = useAtomValue(gameConfigAtom);
