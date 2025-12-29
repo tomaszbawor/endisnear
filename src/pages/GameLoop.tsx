@@ -255,18 +255,6 @@ export default function GameLoopPage() {
 	return (
 		<GameContainer>
 			<div className="h-full flex flex-col gap-4">
-				{/* Player Name Header */}
-				{currentPlayer && (
-					<div className="text-center">
-						<h2 className="text-2xl font-bold">{currentPlayer.name}</h2>
-						<p className="text-sm text-muted-foreground">
-							Level {currentPlayer.level}{" "}
-							{currentPlayer.class.charAt(0).toUpperCase() +
-								currentPlayer.class.slice(1)}
-						</p>
-					</div>
-				)}
-
 				{/* Navigation Bar */}
 				<NavigationBar
 					currentView={currentView}

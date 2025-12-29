@@ -1,5 +1,7 @@
+import { useAtomValue } from "@effect-atom/atom-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { currentPlayerAtom } from "@/state/playerState";
 import type { PlayerStats } from "@/types/equipment";
 
 interface CharacterStatsProps {
@@ -9,10 +11,12 @@ interface CharacterStatsProps {
 export function CharacterStats({ stats }: CharacterStatsProps) {
 	const expPercentage = (stats.currentExp / stats.expToNextLevel) * 100;
 
+	const hero = useAtomValue(currentPlayerAtom);
+
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle className="text-lg">Character</CardTitle>
+				<CardTitle className="text-lg">{hero?.name}</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-3">
 				{/* Level & EXP */}
