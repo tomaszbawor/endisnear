@@ -1,6 +1,6 @@
 import { useAtomSet, useAtomValue } from "@effect-atom/atom-react";
 import React from "react";
-import CenteredPageContainer from "@/components/custom/CenteredPageContainer";
+import GameContainer from "@/components/custom/GameContainer";
 import { CharacterStats } from "@/components/game/CharacterStats";
 import { EquipmentSlotComponent } from "@/components/game/EquipmentSlot";
 import { ItemCard } from "@/components/game/ItemCard";
@@ -196,8 +196,8 @@ export default function GameLoopPage() {
 	};
 
 	return (
-		<CenteredPageContainer>
-			<div className="h-full w-full flex flex-col gap-4">
+		<GameContainer>
+			<div className="h-full max-w-7xl mx-auto flex flex-col gap-4">
 				{/* Navigation Bar */}
 				<NavigationBar
 					currentView={currentView}
@@ -235,7 +235,7 @@ export default function GameLoopPage() {
 					</div>
 				</div>
 			</div>
-		</CenteredPageContainer>
+		</GameContainer>
 	);
 }
 

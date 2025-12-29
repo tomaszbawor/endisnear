@@ -2,6 +2,7 @@ import { Atom, useAtomSet, useAtomValue } from "@effect-atom/atom-react";
 import { Duration, Effect, Fiber, Schedule, Stream } from "effect";
 import React from "react";
 import { BattleLog, SimpleCombatantCard } from "@/components/battle";
+import GameContainer from "@/components/custom/GameContainer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -176,99 +177,103 @@ export default function BattleTestPage() {
 	};
 
 	return (
-		<div className="container mx-auto p-4 space-y-4">
-			<h1 className="text-3xl font-bold text-center mb-6">Battle Test Arena</h1>
+		<GameContainer>
+			<div className="max-w-7xl mx-auto space-y-4">
+				<h1 className="text-3xl font-bold text-center mb-6">
+					Battle Test Arena
+				</h1>
 
-			{/* Controls */}
-			<Card>
-				<CardHeader>
-					<CardTitle>Battle Controls</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<div>
-							<Label htmlFor="monster-select">Select Monster</Label>
-							<Select
-								value={selectedMonster}
-								onValueChange={setSelectedMonster}
+				{/* Controls */}
+				<Card>
+					<CardHeader>
+						<CardTitle>Battle Controls</CardTitle>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div>
+								<Label htmlFor="monster-select">Select Monster</Label>
+								<Select
+									value={selectedMonster}
+									onValueChange={setSelectedMonster}
+									disabled={battleState?.isRunning ?? false}
+								>
+									<SelectTrigger id="monster-select">
+										<SelectValue placeholder="Choose a monster" />
+									</SelectTrigger>
+									<SelectContent>
+										{monsterList.map((monsterKey) => {
+											const template = MONSTER_TEMPLATES[monsterKey];
+											return (
+												<SelectItem key={monsterKey} value={monsterKey}>
+													{template?.name} (Lv. {template?.level})
+												</SelectItem>
+											);
+										})}
+									</SelectContent>
+								</Select>
+							</div>
+
+							<div>
+								<Label htmlFor="turn-speed">Turn Speed: {turnSpeed}ms</Label>
+								<Slider
+									id="turn-speed"
+									min={100}
+									max={2000}
+									step={100}
+									value={[turnSpeed]}
+									onValueChange={(values) => setTurnSpeed(values[0] ?? 500)}
+									disabled={battleState?.isRunning ?? false}
+								/>
+							</div>
+						</div>
+
+						<div className="flex gap-2">
+							<Button
+								onClick={startBattle}
 								disabled={battleState?.isRunning ?? false}
 							>
-								<SelectTrigger id="monster-select">
-									<SelectValue placeholder="Choose a monster" />
-								</SelectTrigger>
-								<SelectContent>
-									{monsterList.map((monsterKey) => {
-										const template = MONSTER_TEMPLATES[monsterKey];
-										return (
-											<SelectItem key={monsterKey} value={monsterKey}>
-												{template?.name} (Lv. {template?.level})
-											</SelectItem>
-										);
-									})}
-								</SelectContent>
-							</Select>
+								Start Battle
+							</Button>
+							<Button
+								onClick={stopBattle}
+								disabled={!battleState?.isRunning}
+								variant="destructive"
+							>
+								Stop
+							</Button>
 						</div>
+					</CardContent>
+				</Card>
 
-						<div>
-							<Label htmlFor="turn-speed">Turn Speed: {turnSpeed}ms</Label>
-							<Slider
-								id="turn-speed"
-								min={100}
-								max={2000}
-								step={100}
-								value={[turnSpeed]}
-								onValueChange={(values) => setTurnSpeed(values[0] ?? 500)}
-								disabled={battleState?.isRunning ?? false}
-							/>
-						</div>
-					</div>
+				{/* Battle Arena */}
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<SimpleCombatantCard
+						combatant={battleEntities.hero}
+						icon="🦸"
+						variant="hero"
+						emptyMessage="Ready to battle!"
+						additionalInfo={
+							battleEntities.hero
+								? { "💪 STR": battleEntities.hero.stats.strength }
+								: undefined
+						}
+					/>
+					<SimpleCombatantCard
+						combatant={battleEntities.monster}
+						icon="👹"
+						variant="enemy"
+						emptyMessage="Select a monster and start battle"
+						additionalInfo={
+							battleEntities.monster
+								? { "📊 LVL": MONSTER_TEMPLATES[selectedMonster]?.level ?? 0 }
+								: undefined
+						}
+					/>
+				</div>
 
-					<div className="flex gap-2">
-						<Button
-							onClick={startBattle}
-							disabled={battleState?.isRunning ?? false}
-						>
-							Start Battle
-						</Button>
-						<Button
-							onClick={stopBattle}
-							disabled={!battleState?.isRunning}
-							variant="destructive"
-						>
-							Stop
-						</Button>
-					</div>
-				</CardContent>
-			</Card>
-
-			{/* Battle Arena */}
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-				<SimpleCombatantCard
-					combatant={battleEntities.hero}
-					icon="🦸"
-					variant="hero"
-					emptyMessage="Ready to battle!"
-					additionalInfo={
-						battleEntities.hero
-							? { "💪 STR": battleEntities.hero.stats.strength }
-							: undefined
-					}
-				/>
-				<SimpleCombatantCard
-					combatant={battleEntities.monster}
-					icon="👹"
-					variant="enemy"
-					emptyMessage="Select a monster and start battle"
-					additionalInfo={
-						battleEntities.monster
-							? { "📊 LVL": MONSTER_TEMPLATES[selectedMonster]?.level ?? 0 }
-							: undefined
-					}
-				/>
+				{/* Battle Log */}
+				<BattleLog logs={battleLog} />
 			</div>
-
-			{/* Battle Log */}
-			<BattleLog logs={battleLog} />
-		</div>
+		</GameContainer>
 	);
 }
