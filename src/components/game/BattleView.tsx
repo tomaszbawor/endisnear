@@ -34,6 +34,7 @@ class Hero extends Entity {
 			strength: playerData.stats.strength,
 			dexterity: playerData.stats.dexterity,
 			intelligence: playerData.stats.intelligence,
+			// TODO: FIIIIIX THIS
 			willpower: 6, // Default values not in player stats
 			luck: 4,
 		};

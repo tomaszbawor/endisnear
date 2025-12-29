@@ -212,6 +212,7 @@ export default function GameLoopPage() {
 		});
 	};
 
+	// Todo: remove to some global management class
 	const handleBuyItem = (item: Item) => {
 		if (gold < item.price) {
 			console.warn("Not enough gold!");
@@ -236,6 +237,7 @@ export default function GameLoopPage() {
 		setGold(gold - item.price);
 	};
 
+	// Todo: remove to some global management class
 	const handleSellItem = (item: Item) => {
 		const inventoryIndex = inventory.findIndex(
 			(inventorySlot: { item: Item | null }) =>
@@ -264,7 +266,7 @@ export default function GameLoopPage() {
 
 				<div className="flex-1 flex gap-4 overflow-hidden">
 					{/* Left Sidebar - Character Stats */}
-					<div className="w-64 flex-shrink-0 overflow-y-auto">
+					<div className="w-64 shrink-0 overflow-y-auto">
 						<CharacterStats stats={playerStats} />
 					</div>
 

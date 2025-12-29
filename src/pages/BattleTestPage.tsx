@@ -72,7 +72,6 @@ export default function BattleTestPage() {
 	const monsterList = Object.keys(MONSTER_TEMPLATES);
 
 	// Battle loop effect
-	// biome-ignore lint/correctness/useExhaustiveDependencies: battleId is needed to restart battle
 	React.useEffect(() => {
 		if (!battleState?.isRunning || !battleEntities.battleSystem) {
 			return;
@@ -122,12 +121,11 @@ export default function BattleTestPage() {
 		};
 	}, [
 		battleState?.isRunning,
-		battleState?.battleId,
 		battleEntities.battleSystem,
-		turnSpeed,
 		setBattleState,
 		setBattleEvents,
 		setLogIdCounter,
+		turnSpeed,
 	]);
 
 	const startBattle = async () => {
