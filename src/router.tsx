@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router";
 
+import BattleTestPage from "./pages/BattleTestPage";
 import CharacterPage from "./pages/CharacterPage";
 import GameLoopPage from "./pages/GameLoop";
 import MainMenu from "./pages/MainMenu";
@@ -24,6 +25,6 @@ export const appRouter = createBrowserRouter([
 	},
 	{
 		path: "/test",
-		element: <CharacterPage />,
+		element: <BattleTestPage />,
 	},
 ]);
