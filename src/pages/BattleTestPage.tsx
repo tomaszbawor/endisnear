@@ -1,9 +1,9 @@
 import { Effect } from "effect";
 import React from "react";
+import { BattleLog, SimpleCombatantCard } from "@/components/battle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import {
 	Select,
 	SelectContent,
@@ -295,109 +295,32 @@ export default function BattleTestPage() {
 
 			{/* Battle Arena */}
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-				{/* Hero Card */}
-				<Card>
-					<CardHeader>
-						<CardTitle className="text-primary">
-							🦸 {heroRef.current?.name ?? "Hero"}
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-2">
-						{heroRef.current ? (
-							<>
-								<div>
-									<div className="flex justify-between text-sm mb-1">
-										<span>Health</span>
-										<span>
-											{heroRef.current.combatStats.health}/
-											{heroRef.current.combatStats.maxHealth}
-										</span>
-									</div>
-									<Progress
-										value={heroRef.current.combatStats.health}
-										max={heroRef.current.combatStats.maxHealth}
-									/>
-								</div>
-								<div className="grid grid-cols-2 gap-2 text-sm">
-									<div>⚔️ ATK: {heroRef.current.combatStats.attack}</div>
-									<div>🛡️ DEF: {heroRef.current.combatStats.defense}</div>
-									<div>⚡ SPD: {heroRef.current.combatStats.speed}</div>
-									<div>💪 STR: {heroRef.current.stats.strength}</div>
-								</div>
-							</>
-						) : (
-							<div className="text-muted-foreground text-center py-8">
-								Ready to battle!
-							</div>
-						)}
-					</CardContent>
-				</Card>
-
-				{/* Monster Card */}
-				<Card>
-					<CardHeader>
-						<CardTitle className="text-destructive">
-							👹 {monsterRef.current?.name ?? "No Monster"}
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-2">
-						{monsterRef.current ? (
-							<>
-								<div>
-									<div className="flex justify-between text-sm mb-1">
-										<span>Health</span>
-										<span>
-											{monsterRef.current.combatStats.health}/
-											{monsterRef.current.combatStats.maxHealth}
-										</span>
-									</div>
-									<Progress
-										value={monsterRef.current.combatStats.health}
-										max={monsterRef.current.combatStats.maxHealth}
-										variant="danger"
-									/>
-								</div>
-								<div className="grid grid-cols-2 gap-2 text-sm">
-									<div>⚔️ ATK: {monsterRef.current.combatStats.attack}</div>
-									<div>🛡️ DEF: {monsterRef.current.combatStats.defense}</div>
-									<div>⚡ SPD: {monsterRef.current.combatStats.speed}</div>
-									<div>📊 LVL: {MONSTER_TEMPLATES[selectedMonster]?.level}</div>
-								</div>
-							</>
-						) : (
-							<div className="text-muted-foreground text-center py-8">
-								Select a monster and start battle
-							</div>
-						)}
-					</CardContent>
-				</Card>
+				<SimpleCombatantCard
+					combatant={heroRef.current}
+					icon="🦸"
+					variant="hero"
+					emptyMessage="Ready to battle!"
+					additionalInfo={
+						heroRef.current
+							? { "💪 STR": heroRef.current.stats.strength }
+							: undefined
+					}
+				/>
+				<SimpleCombatantCard
+					combatant={monsterRef.current}
+					icon="👹"
+					variant="enemy"
+					emptyMessage="Select a monster and start battle"
+					additionalInfo={
+						monsterRef.current
+							? { "📊 LVL": MONSTER_TEMPLATES[selectedMonster]?.level ?? 0 }
+							: undefined
+					}
+				/>
 			</div>
 
 			{/* Battle Log */}
-			<Card>
-				<CardHeader>
-					<CardTitle>Battle Log</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="h-64 overflow-y-auto bg-background border-2 border-foreground p-4 font-mono text-xs space-y-1">
-						{battleLog.length === 0 ? (
-							<div className="text-muted-foreground text-center py-8">
-								Battle log will appear here...
-							</div>
-						) : (
-							battleLog.map((log) => {
-								const [id, ...messageParts] = log.split("|");
-								const message = messageParts.join("|");
-								return (
-									<div key={id} className="text-foreground">
-										{message}
-									</div>
-								);
-							})
-						)}
-					</div>
-				</CardContent>
-			</Card>
+			<BattleLog logs={battleLog} />
 		</div>
 	);
 }
