@@ -1,8 +1,8 @@
 import type { PropsWithChildren } from "react";
 
 /**
- * Full-viewport container for game pages
- * Provides proper resolution for browser gameplay with responsive layout
+ * Fixed-dimension centered container for all game pages
+ * Provides consistent 1400x900 resolution centered on screen
  */
 export default function GameContainer({ children }: PropsWithChildren) {
 	return (
@@ -14,8 +14,12 @@ export default function GameContainer({ children }: PropsWithChildren) {
 				<div className="absolute inset-0 [background:radial-gradient(circle_at_center,transparent_0,transparent_40%,hsl(var(--background))_72%)]" />
 			</div>
 
-			{/* Full viewport game content */}
-			<div className="relative min-h-screen w-full p-4">{children}</div>
+			{/* Centered fixed-size game content */}
+			<div className="min-h-screen w-full flex items-center justify-center p-4">
+				<div className="w-full h-[900px] max-w-[1400px] rounded-2xl shadow-2xl p-6 overflow-hidden bg-background/50 backdrop-blur-sm border border-foreground/10">
+					{children}
+				</div>
+			</div>
 		</div>
 	);
 }

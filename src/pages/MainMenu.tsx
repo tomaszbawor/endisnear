@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { useNavigate } from "react-router";
-import CenteredPageContainer from "@/components/custom/CenteredPageContainer";
+import GameContainer from "@/components/custom/GameContainer";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -72,7 +72,7 @@ export default function EndIsNearMainMenu() {
 	};
 
 	return (
-		<CenteredPageContainer>
+		<GameContainer>
 			<main className="relative flex items-center justify-center px-6 py-14">
 				<div>
 					{/* Title / Flavor */}
@@ -225,6 +225,6 @@ export default function EndIsNearMainMenu() {
 					</section>
 				</div>
 			</main>
-		</CenteredPageContainer>
+		</GameContainer>
 	);
 }

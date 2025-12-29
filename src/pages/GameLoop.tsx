@@ -197,7 +197,7 @@ export default function GameLoopPage() {
 
 	return (
 		<GameContainer>
-			<div className="h-full max-w-7xl mx-auto flex flex-col gap-4">
+			<div className="h-full flex flex-col gap-4">
 				{/* Navigation Bar */}
 				<NavigationBar
 					currentView={currentView}

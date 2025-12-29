@@ -1,7 +1,7 @@
 import { Atom, useAtomSet, useAtomValue } from "@effect-atom/atom-react";
 import { Plus, Save } from "lucide-react";
 import { useNavigate } from "react-router";
-import CenteredPageContainer from "@/components/custom/CenteredPageContainer";
+import GameContainer from "@/components/custom/GameContainer";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -40,7 +40,7 @@ export default function NewGamePage() {
 	};
 
 	return (
-		<CenteredPageContainer>
+		<GameContainer>
 			<main className="relative flex flex-col items-center justify-center px-6 py-14">
 				<div className="w-full max-w-3xl">
 					{/* Header */}
@@ -152,6 +152,6 @@ export default function NewGamePage() {
 					</div>
 				</div>
 			</main>
-		</CenteredPageContainer>
+		</GameContainer>
 	);
 }
