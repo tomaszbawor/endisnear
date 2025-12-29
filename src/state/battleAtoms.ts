@@ -52,3 +52,21 @@ export const battleEventsAtom = Atom.make<string[]>([]);
  * Log ID counter atom - Tracks unique IDs for battle log entries
  */
 export const logIdCounterAtom = Atom.make<number>(0);
+
+/**
+ * Player death state atom - Tracks if player has died and when
+ *
+ * When player dies:
+ * - isDead: true
+ * - deathTime: timestamp when death occurred
+ * After 5 seconds, auto-revive with full health
+ */
+export interface DeathState {
+	isDead: boolean;
+	deathTime: number | null;
+}
+
+export const deathStateAtom = Atom.make<DeathState>({
+	isDead: false,
+	deathTime: null,
+});

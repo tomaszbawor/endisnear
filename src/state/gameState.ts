@@ -51,19 +51,19 @@ export const equippedItemsAtom = Atom.make<EquippedItems>({
  * Inventory atom - 20 slot inventory grid
  */
 export const inventoryAtom = Atom.make<InventorySlot[]>(
-	Array.from({ length: 20 }, () => ({ item: null, quantity: 0 })),
+	Array.from({ length: 21 }, () => ({ item: null, quantity: 0 })),
 );
 
 /**
  * Current gold amount
  */
-export const goldAtom = Atom.make<number>(100);
+export const goldAtom = Atom.make<number>(100000);
 
 /**
- * Current game view (map, inventory, shop, settings)
+ * Current game view (battle, map, inventory, shop, settings)
  */
-export type GameView = "map" | "inventory" | "shop" | "settings";
-export const currentViewAtom = Atom.make<GameView>("map");
+export type GameView = "battle" | "map" | "inventory" | "shop" | "settings";
+export const currentViewAtom = Atom.make<GameView>("battle");
 
 /**
  * Selected area for combat

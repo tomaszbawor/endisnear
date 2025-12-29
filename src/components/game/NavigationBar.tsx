@@ -1,4 +1,10 @@
-import { Backpack, Map as MapIcon, Settings, ShoppingBag } from "lucide-react";
+import {
+	Backpack,
+	Map as MapIcon,
+	Settings,
+	ShoppingBag,
+	Swords,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -19,6 +25,12 @@ export function NavigationBar({
 		<Card className="p-2">
 			<div className="flex items-center justify-between gap-2">
 				<div className="flex gap-2">
+					<NavButton
+						icon={<Swords className="h-4 w-4" />}
+						label="Battle"
+						active={currentView === "battle"}
+						onClick={() => onViewChange("battle")}
+					/>
 					<NavButton
 						icon={<MapIcon className="h-4 w-4" />}
 						label="Map"

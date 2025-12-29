@@ -31,3 +31,8 @@ bun run index.ts
 ```
 
 This project was created using `bun init` in bun v1.3.5. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+
+## Todo
+
+- [ ] Items from shop should dissapear after buy
+- [ ] When replacing one item with other the first dissapears

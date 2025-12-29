@@ -2,13 +2,8 @@ import { useAtomSet, useAtomValue } from "@effect-atom/atom-react";
 import React from "react";
 import GameContainer from "@/components/custom/GameContainer";
 import { CharacterStats } from "@/components/game/CharacterStats";
-import { EquipmentSlotComponent } from "@/components/game/EquipmentSlot";
-import { ItemCard } from "@/components/game/ItemCard";
 import { NavigationBar } from "@/components/game/NavigationBar";
-import { WorldMap } from "@/components/game/WorldMap";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { generateShopItems } from "@/data/items";
-import type { MapLocation } from "@/data/mapLocations";
 import {
 	currentViewAtom,
 	equippedItemsAtom,
@@ -18,9 +13,9 @@ import {
 	playerStatsAtom,
 	shopItemsAtom,
 } from "@/state/gameState";
-import { currentPlayerAtom, type PlayerData } from "@/state/playerState";
-import type { Item } from "@/types/equipment";
-import { EquipmentSlot } from "@/types/equipment";
+import { currentPlayerAtom } from "@/state/playerState";
+import type { EquipmentSlot, Item } from "@/types/equipment";
+import { GameLoopSubview } from "./gameloop/GameLoopSubview";
 
 /**
  * Calculate total stats from equipped items
@@ -103,6 +98,53 @@ export default function GameLoopPage() {
 			...currentPlayer,
 			location: locationId,
 		});
+
+		// Switch to battle view when changing location
+		setCurrentView("battle");
+	};
+
+	const handlePlayerDeath = () => {
+		if (!currentPlayer) return;
+
+		// Player dies - reset health to full after death
+		// The BattleView handles the 5-second death screen
+		setCurrentPlayer({
+			...currentPlayer,
+			stats: {
+				...currentPlayer.stats,
+				currentHealth: currentPlayer.stats.health,
+			},
+		});
+	};
+
+	const handleMonsterDefeated = (exp: number, gold: number) => {
+		console.log("Monster defeated");
+		if (!currentPlayer) return;
+
+		// Add gold
+		setGold((current) => current + gold);
+
+		// Add experience
+		const newExp = currentPlayer.currentExp + exp;
+		let newLevel = currentPlayer.level;
+		let expToNext = currentPlayer.expToNextLevel;
+
+		// Level up if enough exp
+		if (newExp >= expToNext) {
+			newLevel += 1;
+			expToNext = Math.floor(expToNext * 1.5);
+		}
+
+		setCurrentPlayer({
+			...currentPlayer,
+			level: newLevel,
+			currentExp: newExp >= currentPlayer.expToNextLevel ? 0 : newExp,
+			expToNextLevel: expToNext,
+		});
+	};
+
+	const handleBackToMap = () => {
+		setCurrentView("map");
 	};
 
 	const handleEquipItem = (item: Item) => {
@@ -240,263 +282,26 @@ export default function GameLoopPage() {
 
 					{/* Main Content Area */}
 					<div className="flex-1 overflow-y-auto">
-						{currentView === "map" && (
-							<MapView
-								currentPlayer={currentPlayer}
-								onLocationChange={handleLocationChange}
-							/>
-						)}
-						{currentView === "inventory" && (
-							<InventoryView
-								inventory={inventory}
-								equippedItems={equippedItems}
-								onEquipItem={handleEquipItem}
-								onUnequipItem={handleUnequipItem}
-								onSellItem={handleSellItem}
-							/>
-						)}
-						{currentView === "shop" && (
-							<ShopView
-								shopItems={shopItems}
-								gold={gold}
-								onBuyItem={handleBuyItem}
-								lastRotation={lastShopRotation}
-							/>
-						)}
-						{currentView === "settings" && <SettingsView />}
+						<GameLoopSubview
+							currentView={currentView}
+							currentPlayer={currentPlayer}
+							inventory={inventory}
+							equippedItems={equippedItems}
+							shopItems={shopItems}
+							gold={gold}
+							lastShopRotation={lastShopRotation}
+							onLocationChange={handleLocationChange}
+							onEquipItem={handleEquipItem}
+							onUnequipItem={handleUnequipItem}
+							onSellItem={handleSellItem}
+							onBuyItem={handleBuyItem}
+							onBackToMap={handleBackToMap}
+							onPlayerDeath={handlePlayerDeath}
+							onMonsterDefeated={handleMonsterDefeated}
+						/>
 					</div>
 				</div>
 			</div>
 		</GameContainer>
-	);
-}
-
-// View Components
-
-interface MapViewProps {
-	currentPlayer: PlayerData | null;
-	onLocationChange: (location: string) => void;
-}
-
-function MapView({ currentPlayer, onLocationChange }: MapViewProps) {
-	const handleLocationSelect = (location: MapLocation) => {
-		onLocationChange(location.id);
-	};
-
-	if (!currentPlayer) {
-		return (
-			<Card>
-				<CardHeader>
-					<CardTitle>Map</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="text-center text-muted-foreground py-8">
-						No player data available
-					</div>
-				</CardContent>
-			</Card>
-		);
-	}
-
-	return (
-		<Card className="h-full">
-			<CardHeader>
-				<CardTitle>World Map</CardTitle>
-			</CardHeader>
-			<CardContent className="h-[500px]">
-				<WorldMap
-					currentLocation={currentPlayer.location}
-					playerLevel={currentPlayer.level}
-					onLocationSelect={handleLocationSelect}
-				/>
-			</CardContent>
-		</Card>
-	);
-}
-
-interface InventoryViewProps {
-	inventory: Array<{ item: Item | null; quantity: number }>;
-	equippedItems: { [key in EquipmentSlot]?: Item };
-	onEquipItem: (item: Item) => void;
-	onUnequipItem: (slot: EquipmentSlot) => void;
-	onSellItem: (item: Item) => void;
-}
-
-function InventoryView({
-	inventory,
-	equippedItems,
-	onEquipItem,
-	onUnequipItem,
-}: InventoryViewProps) {
-	return (
-		<div className="space-y-4">
-			{/* Equipment Panel */}
-			<Card>
-				<CardHeader>
-					<CardTitle>Equipment</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
-						{/* Top row */}
-						<div />
-						<EquipmentSlotComponent
-							slot={EquipmentSlot.HEAD}
-							item={equippedItems[EquipmentSlot.HEAD]}
-							onDrop={onEquipItem}
-							onRemove={() => onUnequipItem(EquipmentSlot.HEAD)}
-						/>
-						<div />
-
-						{/* Middle row */}
-						<EquipmentSlotComponent
-							slot={EquipmentSlot.MAINHAND}
-							item={equippedItems[EquipmentSlot.MAINHAND]}
-							onDrop={onEquipItem}
-							onRemove={() => onUnequipItem(EquipmentSlot.MAINHAND)}
-						/>
-						<EquipmentSlotComponent
-							slot={EquipmentSlot.TORSO}
-							item={equippedItems[EquipmentSlot.TORSO]}
-							onDrop={onEquipItem}
-							onRemove={() => onUnequipItem(EquipmentSlot.TORSO)}
-						/>
-						<EquipmentSlotComponent
-							slot={EquipmentSlot.OFFHAND}
-							item={equippedItems[EquipmentSlot.OFFHAND]}
-							onDrop={onEquipItem}
-							onRemove={() => onUnequipItem(EquipmentSlot.OFFHAND)}
-						/>
-
-						{/* Bottom row */}
-						<EquipmentSlotComponent
-							slot={EquipmentSlot.RING}
-							item={equippedItems[EquipmentSlot.RING]}
-							onDrop={onEquipItem}
-							onRemove={() => onUnequipItem(EquipmentSlot.RING)}
-						/>
-						<EquipmentSlotComponent
-							slot={EquipmentSlot.LEGS}
-							item={equippedItems[EquipmentSlot.LEGS]}
-							onDrop={onEquipItem}
-							onRemove={() => onUnequipItem(EquipmentSlot.LEGS)}
-						/>
-						<EquipmentSlotComponent
-							slot={EquipmentSlot.NECKLACE}
-							item={equippedItems[EquipmentSlot.NECKLACE]}
-							onDrop={onEquipItem}
-							onRemove={() => onUnequipItem(EquipmentSlot.NECKLACE)}
-						/>
-					</div>
-				</CardContent>
-			</Card>
-
-			{/* Inventory Grid */}
-			<Card>
-				<CardHeader>
-					<CardTitle>Inventory</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="grid grid-cols-5 gap-2">
-						{inventory.map((inventorySlot, index) => (
-							// biome-ignore lint/suspicious/noArrayIndexKey: Fixed inventory slots - index represents slot position
-							<div key={`inventory-${index}`}>
-								{inventorySlot.item ? (
-									<ItemCard
-										item={inventorySlot.item}
-										onClick={() => {
-											if (inventorySlot.item) {
-												onEquipItem(inventorySlot.item);
-											}
-										}}
-										draggable={true}
-										compact={true}
-									/>
-								) : (
-									<Card className="h-20 border-2 border-dashed border-muted flex items-center justify-center">
-										<span className="text-xs text-muted-foreground">Empty</span>
-									</Card>
-								)}
-							</div>
-						))}
-					</div>
-				</CardContent>
-			</Card>
-		</div>
-	);
-}
-
-interface ShopViewProps {
-	shopItems: Item[];
-	gold: number;
-	onBuyItem: (item: Item) => void;
-	lastRotation: number;
-}
-
-function ShopView({ shopItems, onBuyItem, lastRotation }: ShopViewProps) {
-	const [timeUntilRotation, setTimeUntilRotation] = React.useState("");
-
-	React.useEffect(() => {
-		const updateTimer = () => {
-			const now = Date.now();
-			const timeSinceRotation = now - lastRotation;
-			const fiveMinutes = 5 * 60 * 1000;
-			const remaining = fiveMinutes - timeSinceRotation;
-
-			if (remaining <= 0) {
-				setTimeUntilRotation("Rotating soon...");
-			} else {
-				const minutes = Math.floor(remaining / 60000);
-				const seconds = Math.floor((remaining % 60000) / 1000);
-				setTimeUntilRotation(
-					`${minutes}:${seconds.toString().padStart(2, "0")}`,
-				);
-			}
-		};
-
-		updateTimer();
-		const interval = setInterval(updateTimer, 1000);
-		return () => clearInterval(interval);
-	}, [lastRotation]);
-
-	return (
-		<Card>
-			<CardHeader>
-				<div className="flex justify-between items-center">
-					<CardTitle>Shop</CardTitle>
-					<div className="text-sm text-muted-foreground">
-						Next rotation: {timeUntilRotation}
-					</div>
-				</div>
-			</CardHeader>
-			<CardContent>
-				<div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-					{shopItems.map((item) => (
-						<ItemCard
-							key={item.id}
-							item={item}
-							onClick={() => onBuyItem(item)}
-							showPrice={true}
-						/>
-					))}
-				</div>
-			</CardContent>
-		</Card>
-	);
-}
-
-function SettingsView() {
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Settings</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<div className="space-y-4">
-					<div className="text-sm text-muted-foreground">
-						Game settings coming soon...
-					</div>
-				</div>
-			</CardContent>
-		</Card>
 	);
 }
