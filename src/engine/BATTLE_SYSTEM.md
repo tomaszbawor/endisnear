@@ -2,6 +2,12 @@
 
 A comprehensive, extensible battle system built with design patterns and finite state machine architecture.
 
+**Two Implementations Available:**
+1. **Promise-based** (`BattleSystem`) - Standard JavaScript Promises
+2. **Effect-based** (`BattleSystemEffect`) - Functional programming with Effect.ts
+
+See [EFFECT_INTEGRATION.md](./EFFECT_INTEGRATION.md) for Effect.ts usage.
+
 ## Overview
 
 The battle system handles turn-based combat between entities (players and monsters), emitting a stream of events for UI integration and logging.

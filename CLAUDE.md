@@ -104,3 +104,19 @@ bun --hot ./index.ts
 ```
 
 For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
+
+## Code Quality & Verification
+
+After making changes to the codebase, always verify that everything still works correctly by running:
+
+```sh
+bun run check
+```
+
+This command will:
+- Run type checking
+- Run linting
+- Run tests
+- Ensure the build succeeds
+
+**IMPORTANT**: Always run `bun run check` before considering a task complete. If the check fails, fix the issues before proceeding.

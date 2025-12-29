@@ -1,4 +1,11 @@
 export {
+	BattleAlreadyFinishedError,
+	BattleError,
+	BattleNotStartedError,
+	EntityDeadError,
+	InvalidActionError,
+} from "./battle-errors";
+export {
 	AttackEvent,
 	BattleEvent,
 	BattleEventListener,

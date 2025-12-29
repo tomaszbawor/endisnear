@@ -1,8 +1,9 @@
+import { Effect, Stream } from "effect";
 import { BattleEventType } from "./battle-events";
 import { BattleSystem } from "./battle-system";
 import { type CombatStats, Entity } from "./entity";
 import { Monster } from "./monster";
-import { getRandomMonster, MONSTER_TEMPLATES } from "./monster-database";
+import { MONSTER_TEMPLATES } from "./monster-database";
 import type { Stats } from "./stats";
 
 class DemoPlayer extends Entity {
@@ -23,8 +24,8 @@ class DemoPlayer extends Entity {
 	};
 }
 
-async function runBattleDemo() {
-	console.log("=== Battle System Demo ===\n");
+const runBattleDemo = Effect.gen(function* () {
+	console.log("=== Effect-Based Battle System Demo ===\n");
 
 	const player = new DemoPlayer();
 	const enemy = new Monster(MONSTER_TEMPLATES.GOBLIN);
@@ -44,39 +45,44 @@ async function runBattleDemo() {
 	);
 	console.log(`\n${"=".repeat(50)}\n`);
 
-	const battle = new BattleSystem(player, enemy);
+	const battle = yield* BattleSystem.make(player, enemy);
+	const eventStream = battle.getEventStream();
 
-	battle.subscribe((event) => {
-		switch (event.type) {
-			case BattleEventType.LOG:
-				console.log(`📋 ${event.message}`);
-				break;
-			case BattleEventType.ATTACK:
-				console.log(`⚔️  ${event.attacker} attacks ${event.target}!`);
-				break;
-			case BattleEventType.DAMAGE:
-				console.log(
-					`💥 ${event.target} takes ${event.damage} damage! (${event.remainingHealth} HP remaining)`,
-				);
-				break;
-			case BattleEventType.CRITICAL:
-				console.log(
-					`🎯 CRITICAL HIT! ${event.attacker} deals ${event.damage} damage!`,
-				);
-				break;
-			case BattleEventType.DEATH:
-				console.log(`💀 ${event.entity} has fallen!`);
-				break;
-			case BattleEventType.VICTORY:
-				console.log(`🎉 Victory! Gained ${event.expGained} EXP!`);
-				break;
-			case BattleEventType.DEFEAT:
-				console.log(`😵 Defeat...`);
-				break;
-		}
-	});
+	const _eventFiber = yield* Effect.fork(
+		Stream.runForEach(eventStream, (event) =>
+			Effect.sync(() => {
+				switch (event.type) {
+					case BattleEventType.LOG:
+						console.log(`📋 ${event.message}`);
+						break;
+					case BattleEventType.ATTACK:
+						console.log(`⚔️  ${event.attacker} attacks ${event.target}!`);
+						break;
+					case BattleEventType.DAMAGE:
+						console.log(
+							`💥 ${event.target} takes ${event.damage} damage! (${event.remainingHealth} HP remaining)`,
+						);
+						break;
+					case BattleEventType.CRITICAL:
+						console.log(
+							`🎯 CRITICAL HIT! ${event.attacker} deals ${event.damage} damage!`,
+						);
+						break;
+					case BattleEventType.DEATH:
+						console.log(`💀 ${event.entity} has fallen!`);
+						break;
+					case BattleEventType.VICTORY:
+						console.log(`🎉 Victory! Gained ${event.expGained} EXP!`);
+						break;
+					case BattleEventType.DEFEAT:
+						console.log(`😵 Defeat...`);
+						break;
+				}
+			}),
+		),
+	);
 
-	const result = await battle.runAutoBattle();
+	const result = yield* battle.runAutoBattle();
 
 	console.log(`\n${"=".repeat(50)}`);
 	console.log("\n=== Battle Results ===");
@@ -85,90 +91,47 @@ async function runBattleDemo() {
 	);
 	console.log(`Turns: ${result.turnCount}`);
 	console.log(`EXP Gained: ${result.expGained}`);
-	console.log(`Total Events: ${result.events.length}`);
-}
+});
 
-async function runMultipleBattles() {
-	console.log("\n\n=== Multiple Battles Demo ===\n");
+const runConcurrentBattles = Effect.gen(function* () {
+	console.log("\n\n=== Concurrent Battles Demo (Effect) ===\n");
 
-	const player = new DemoPlayer();
-	let totalExp = 0;
-	let victories = 0;
+	const player1 = new DemoPlayer();
+	const player2 = new DemoPlayer();
+	const player3 = new DemoPlayer();
 
-	for (let i = 1; i <= 3; i++) {
-		console.log(`\n--- Battle ${i} ---`);
+	const enemy1 = new Monster(MONSTER_TEMPLATES.SLIME);
+	const enemy2 = new Monster(MONSTER_TEMPLATES.GOBLIN);
+	const enemy3 = new Monster(MONSTER_TEMPLATES.WOLF);
 
-		const monsterTemplate = getRandomMonster(i);
-		const enemy = new Monster(monsterTemplate);
+	console.log("Starting 3 battles concurrently...\n");
 
-		console.log(`Encountered: ${enemy.name} (Level ${enemy.level})`);
+	const [result1, result2, result3] = yield* Effect.all(
+		[
+			BattleSystem.runBattle(player1, enemy1),
+			BattleSystem.runBattle(player2, enemy2),
+			BattleSystem.runBattle(player3, enemy3),
+		],
+		{ concurrency: "unbounded" },
+	);
 
-		const battle = new BattleSystem(player, enemy);
+	console.log("=== Results ===");
+	console.log(
+		`Battle 1 (vs Slime): ${result1.victory ? "Victory" : "Defeat"} - ${result1.turnCount} turns`,
+	);
+	console.log(
+		`Battle 2 (vs Goblin): ${result2.victory ? "Victory" : "Defeat"} - ${result2.turnCount} turns`,
+	);
+	console.log(
+		`Battle 3 (vs Wolf): ${result3.victory ? "Victory" : "Defeat"} - ${result3.turnCount} turns`,
+	);
+});
 
-		battle.subscribe((event) => {
-			if (event.type === BattleEventType.LOG) {
-				console.log(`  ${event.message}`);
-			}
-		});
-
-		const result = await battle.runAutoBattle();
-
-		if (result.victory) {
-			victories++;
-			totalExp += result.expGained;
-		}
-
-		if (!player.isAlive()) {
-			console.log("\nPlayer defeated! Game Over.");
-			break;
-		}
-
-		player.combatStats.health = player.combatStats.maxHealth;
-	}
-
-	console.log("\n=== Campaign Results ===");
-	console.log(`Victories: ${victories}/3`);
-	console.log(`Total EXP: ${totalExp}`);
-}
-
-async function streamingBattleDemo() {
-	console.log("\n\n=== Event Streaming Demo ===\n");
-
-	const player = new DemoPlayer();
-	const enemy = new Monster(MONSTER_TEMPLATES.ORC);
-
-	const battle = new BattleSystem(player, enemy);
-	const stream = battle.createEventStream();
-
-	const reader = stream.getReader();
-
-	const processStream = async () => {
-		try {
-			while (true) {
-				const { done, value } = await reader.read();
-				if (done) break;
-
-				if (value.type === BattleEventType.DAMAGE) {
-					console.log(
-						`[STREAM] Damage event: ${value.damage} to ${value.target}`,
-					);
-				}
-			}
-		} catch (_e) {
-			console.log("[STREAM] Stream closed");
-		}
-	};
-
-	const streamPromise = processStream();
-	const result = await battle.runAutoBattle();
-
-	await streamPromise;
-
-	console.log(`\nStream processed ${result.events.length} events`);
-}
+const main = Effect.gen(function* () {
+	yield* runBattleDemo;
+	yield* runConcurrentBattles;
+});
 
 if (import.meta.main) {
-	await runBattleDemo();
-	await runMultipleBattles();
-	await streamingBattleDemo();
+	await Effect.runPromise(main);
 }

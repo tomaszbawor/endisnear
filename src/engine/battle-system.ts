@@ -1,4 +1,7 @@
-import type { BattleEvent, BattleEventListener } from "./battle-events";
+import { Effect, Ref, Stream } from "effect";
+import type { BattleError } from "./battle-errors";
+import { BattleAlreadyFinishedError } from "./battle-errors";
+import type { BattleEvent } from "./battle-events";
 import { BattleAction, BattleFSM, BattleState } from "./battle-fsm";
 import type { Entity } from "./entity";
 import type { Monster } from "./monster";
@@ -12,137 +15,163 @@ export interface BattleResult {
 }
 
 export class BattleSystem {
-	private fsm: BattleFSM;
-	private events: BattleEvent[] = [];
-	private eventStream: ReadableStream<BattleEvent> | null = null;
-	private streamController: ReadableStreamDefaultController<BattleEvent> | null =
-		null;
+	private constructor(
+		private readonly fsm: BattleFSM,
+		private readonly eventsRef: Ref.Ref<BattleEvent[]>,
+	) {}
 
-	constructor(player: Entity, enemy: Monster) {
-		this.fsm = new BattleFSM(player, enemy, enemy.expReward);
+	static make(player: Entity, enemy: Monster): Effect.Effect<BattleSystem> {
+		return Effect.gen(function* () {
+			const fsm = yield* BattleFSM.make(player, enemy, enemy.expReward);
+			const eventsRef = yield* Ref.make<BattleEvent[]>([]);
 
-		this.fsm.subscribe((event) => {
-			this.events.push(event);
-			if (this.streamController) {
-				this.streamController.enqueue(event);
+			const eventStream = Stream.fromQueue(fsm.eventQueue);
+			yield* Effect.fork(
+				Stream.runForEach(eventStream, (event) =>
+					Ref.update(eventsRef, (events) => [...events, event]),
+				),
+			);
+
+			return new BattleSystem(fsm, eventsRef);
+		});
+	}
+
+	getEventStream(): Stream.Stream<BattleEvent> {
+		return this.fsm.getEventStream();
+	}
+
+	start(): Effect.Effect<void> {
+		return Effect.gen(this, function* () {
+			const state = yield* this.fsm.getState();
+			if (state === BattleState.INITIALIZING) {
+				yield* this.fsm.initialize();
 			}
 		});
 	}
 
-	createEventStream(): ReadableStream<BattleEvent> {
-		this.eventStream = new ReadableStream<BattleEvent>({
-			start: (controller) => {
-				this.streamController = controller;
-			},
-			cancel: () => {
-				this.streamController = null;
-			},
+	tick(): Effect.Effect<void> {
+		return Effect.gen(this, function* () {
+			const state = yield* this.fsm.getState();
+
+			switch (state) {
+				case BattleState.TURN_START:
+					yield* this.fsm.startTurn();
+					break;
+
+				case BattleState.ENEMY_TURN:
+					yield* this.fsm.executeEnemyTurn();
+					break;
+
+				case BattleState.CHECKING_VICTORY:
+					yield* this.fsm.checkVictoryConditions();
+					break;
+
+				default:
+					break;
+			}
 		});
-
-		return this.eventStream;
 	}
 
-	subscribe(listener: BattleEventListener): () => void {
-		return this.fsm.subscribe(listener);
+	playerAttack(): Effect.Effect<void, BattleError> {
+		return Effect.gen(this, function* () {
+			const state = yield* this.fsm.getState();
+			if (state === BattleState.PLAYER_TURN) {
+				yield* this.fsm.executeAction(BattleAction.ATTACK);
+			}
+		});
 	}
 
-	start(): void {
-		if (this.fsm.getState() === BattleState.INITIALIZING) {
-			this.fsm.initialize();
-		}
+	playerFlee(): Effect.Effect<void, BattleError> {
+		return Effect.gen(this, function* () {
+			const state = yield* this.fsm.getState();
+			if (state === BattleState.PLAYER_TURN) {
+				yield* this.fsm.executeAction(BattleAction.FLEE);
+			}
+		});
 	}
 
-	tick(): void {
-		const state = this.fsm.getState();
-
-		switch (state) {
-			case BattleState.TURN_START:
-				this.fsm.startTurn();
-				break;
-
-			case BattleState.ENEMY_TURN:
-				this.fsm.executeEnemyTurn();
-				break;
-
-			case BattleState.CHECKING_VICTORY:
-				this.fsm.checkVictoryConditions();
-				break;
-
-			default:
-				break;
-		}
+	isWaitingForPlayerInput(): Effect.Effect<boolean> {
+		return Effect.gen(this, function* () {
+			const state = yield* this.fsm.getState();
+			return state === BattleState.PLAYER_TURN;
+		});
 	}
 
-	playerAttack(): void {
-		if (this.fsm.getState() === BattleState.PLAYER_TURN) {
-			this.fsm.executeAction(BattleAction.ATTACK);
-		}
-	}
-
-	playerFlee(): void {
-		if (this.fsm.getState() === BattleState.PLAYER_TURN) {
-			this.fsm.executeAction(BattleAction.FLEE);
-		}
-	}
-
-	isWaitingForPlayerInput(): boolean {
-		return this.fsm.getState() === BattleState.PLAYER_TURN;
-	}
-
-	isFinished(): boolean {
+	isFinished(): Effect.Effect<boolean> {
 		return this.fsm.isFinished();
 	}
 
-	getResult(): BattleResult | null {
-		if (!this.isFinished()) {
-			return null;
-		}
+	getResult(): Effect.Effect<BattleResult, BattleAlreadyFinishedError> {
+		return Effect.gen(this, function* () {
+			const isFinished = yield* this.fsm.isFinished();
 
-		const state = this.fsm.getState();
-		const context = this.fsm.getContext();
+			if (!isFinished) {
+				return yield* Effect.fail(
+					new BattleAlreadyFinishedError({
+						message: "Battle is not finished yet",
+					}),
+				);
+			}
 
-		return {
-			victory: state === BattleState.VICTORY,
-			fled: state === BattleState.FLED,
-			expGained: state === BattleState.VICTORY ? context.expReward : 0,
-			turnCount: context.turnNumber,
-			events: this.events,
-		};
+			const state = yield* this.fsm.getState();
+			const context = yield* this.fsm.getContext();
+			const events = yield* Ref.get(this.eventsRef);
+
+			return {
+				victory: state === BattleState.VICTORY,
+				fled: state === BattleState.FLED,
+				expGained: state === BattleState.VICTORY ? context.expReward : 0,
+				turnCount: context.turnNumber,
+				events,
+			};
+		});
 	}
 
-	getEvents(): BattleEvent[] {
-		return [...this.events];
-	}
-
-	getCurrentState(): BattleState {
+	getCurrentState(): Effect.Effect<BattleState> {
 		return this.fsm.getState();
 	}
 
-	async runAutoBattle(): Promise<BattleResult> {
-		this.start();
+	runAutoBattle(): Effect.Effect<BattleResult> {
+		return Effect.gen(this, function* () {
+			yield* this.start();
 
-		return new Promise((resolve) => {
-			const runLoop = () => {
-				if (this.isFinished()) {
-					const result = this.getResult();
-					if (this.streamController) {
-						this.streamController.close();
-					}
-					if (result) {
-						resolve(result);
-					}
-					return;
+			while (true) {
+				const finished = yield* this.isFinished();
+				if (finished) break;
+
+				const waitingForInput = yield* this.isWaitingForPlayerInput();
+				if (waitingForInput) {
+					yield* this.playerAttack();
 				}
 
-				if (this.isWaitingForPlayerInput()) {
-					this.playerAttack();
-				}
+				yield* this.tick();
+			}
 
-				this.tick();
-				setTimeout(runLoop, 10);
+			yield* this.fsm.closeEventQueue();
+
+			yield* Effect.sleep("100 millis");
+
+			const state = yield* this.fsm.getState();
+			const context = yield* this.fsm.getContext();
+			const events = yield* Ref.get(this.eventsRef);
+
+			return {
+				victory: state === BattleState.VICTORY,
+				fled: state === BattleState.FLED,
+				expGained: state === BattleState.VICTORY ? context.expReward : 0,
+				turnCount: context.turnNumber,
+				events,
 			};
+		});
+	}
 
-			runLoop();
+	static runBattle(
+		player: Entity,
+		enemy: Monster,
+	): Effect.Effect<BattleResult> {
+		return Effect.gen(function* () {
+			const battle = yield* BattleSystem.make(player, enemy);
+			return yield* battle.runAutoBattle();
 		});
 	}
 }

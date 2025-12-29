@@ -1,7 +1,19 @@
+import { Effect, Queue, Ref, Schema, Stream } from "effect";
+import { InvalidActionError } from "./battle-errors";
 import {
+	type AttackEvent,
 	type BattleEvent,
-	type BattleEventListener,
 	BattleEventType,
+	type BattleStartEvent,
+	type CriticalEvent,
+	type DamageEvent,
+	type DeathEvent,
+	type DefeatEvent,
+	type FleeEvent,
+	type LogEvent,
+	type StateChangeEvent,
+	type TurnStartEvent,
+	type VictoryEvent,
 } from "./battle-events";
 import type { Entity } from "./entity";
 
@@ -34,250 +46,359 @@ export interface BattleContext {
 	expReward: number;
 }
 
+const _BattleStateSchema = Schema.Literal(
+	BattleState.INITIALIZING,
+	BattleState.TURN_START,
+	BattleState.PLAYER_TURN,
+	BattleState.ENEMY_TURN,
+	BattleState.PROCESSING_ACTION,
+	BattleState.CHECKING_VICTORY,
+	BattleState.VICTORY,
+	BattleState.DEFEAT,
+	BattleState.FLED,
+);
+
 export class BattleFSM {
-	private context: BattleContext;
-	private listeners: BattleEventListener[] = [];
+	private constructor(
+		private readonly contextRef: Ref.Ref<BattleContext>,
+		public readonly eventQueue: Queue.Queue<BattleEvent>,
+	) {}
 
-	constructor(player: Entity, enemy: Entity, expReward: number) {
-		this.context = {
-			player,
-			enemy,
-			currentState: BattleState.INITIALIZING,
-			turnNumber: 0,
-			isPlayerTurn: true,
-			expReward,
-		};
-	}
+	static make(
+		player: Entity,
+		enemy: Entity,
+		expReward: number,
+	): Effect.Effect<BattleFSM> {
+		return Effect.gen(function* () {
+			const contextRef = yield* Ref.make<BattleContext>({
+				player,
+				enemy,
+				currentState: BattleState.INITIALIZING,
+				turnNumber: 0,
+				isPlayerTurn: true,
+				expReward,
+			});
 
-	getState(): BattleState {
-		return this.context.currentState;
-	}
+			const eventQueue = yield* Queue.unbounded<BattleEvent>();
 
-	getContext(): Readonly<BattleContext> {
-		return this.context;
-	}
-
-	subscribe(listener: BattleEventListener): () => void {
-		this.listeners.push(listener);
-		return () => {
-			this.listeners = this.listeners.filter((l) => l !== listener);
-		};
-	}
-
-	private emit(event: Omit<BattleEvent, "timestamp">): void {
-		const fullEvent = { ...event, timestamp: Date.now() } as BattleEvent;
-		this.listeners.forEach((listener) => {
-			listener(fullEvent);
+			return new BattleFSM(contextRef, eventQueue);
 		});
 	}
 
-	private transitionTo(newState: BattleState): void {
-		const oldState = this.context.currentState;
-		this.context.currentState = newState;
-		this.emit({
-			type: BattleEventType.STATE_CHANGE,
-			from: oldState,
-			to: newState,
+	getState(): Effect.Effect<BattleState> {
+		return Effect.gen(this, function* () {
+			const context = yield* this.contextRef.get;
+			return context.currentState;
 		});
 	}
 
-	initialize(): void {
-		this.emit({
-			type: BattleEventType.BATTLE_START,
-			player: this.context.player.name,
-			enemy: this.context.enemy.name,
-		});
-
-		this.emit({
-			type: BattleEventType.LOG,
-			message: `Battle started! ${this.context.player.name} vs ${this.context.enemy.name}`,
-		});
-
-		const playerSpeed =
-			this.context.player.combatStats.speed +
-			this.context.player.stats.dexterity;
-		const enemySpeed =
-			this.context.enemy.combatStats.speed + this.context.enemy.stats.dexterity;
-
-		this.context.isPlayerTurn = playerSpeed >= enemySpeed;
-
-		this.emit({
-			type: BattleEventType.LOG,
-			message: this.context.isPlayerTurn
-				? `${this.context.player.name} moves first!`
-				: `${this.context.enemy.name} moves first!`,
-		});
-
-		this.transitionTo(BattleState.TURN_START);
+	getContext(): Effect.Effect<Readonly<BattleContext>> {
+		return this.contextRef.get;
 	}
 
-	startTurn(): void {
-		this.context.turnNumber++;
-		const actor = this.context.isPlayerTurn
-			? this.context.player
-			: this.context.enemy;
+	getEventStream(): Stream.Stream<BattleEvent> {
+		return Stream.fromQueue(this.eventQueue);
+	}
 
-		this.emit({
-			type: BattleEventType.TURN_START,
-			actor: actor.name,
-			turnNumber: this.context.turnNumber,
+	private emit(event: Omit<BattleEvent, "timestamp">): Effect.Effect<void> {
+		return Effect.gen(this, function* () {
+			const fullEvent = { ...event, timestamp: Date.now() } as BattleEvent;
+			yield* Queue.offer(this.eventQueue, fullEvent);
 		});
-
-		this.transitionTo(
-			this.context.isPlayerTurn
-				? BattleState.PLAYER_TURN
-				: BattleState.ENEMY_TURN,
-		);
 	}
 
-	executeAction(action: BattleAction): void {
-		this.context.playerAction = action;
-		this.transitionTo(BattleState.PROCESSING_ACTION);
+	private transitionTo(newState: BattleState): Effect.Effect<void> {
+		return Effect.gen(this, function* () {
+			const context = yield* Ref.get(this.contextRef);
+			const oldState = context.currentState;
 
-		switch (action) {
-			case BattleAction.ATTACK:
-				this.processAttack(this.context.player, this.context.enemy);
-				break;
-			case BattleAction.FLEE:
-				this.processFlee();
-				break;
-			default:
-				this.emit({
-					type: BattleEventType.LOG,
-					message: `${action} not yet implemented`,
-				});
-		}
+			yield* Ref.set(this.contextRef, {
+				...context,
+				currentState: newState,
+			});
 
-		if (this.context.currentState === BattleState.PROCESSING_ACTION) {
-			this.transitionTo(BattleState.CHECKING_VICTORY);
-		}
-	}
-
-	executeEnemyTurn(): void {
-		this.transitionTo(BattleState.PROCESSING_ACTION);
-		this.processAttack(this.context.enemy, this.context.player);
-		if (this.context.currentState === BattleState.PROCESSING_ACTION) {
-			this.transitionTo(BattleState.CHECKING_VICTORY);
-		}
-	}
-
-	private processAttack(attacker: Entity, target: Entity): void {
-		this.emit({
-			type: BattleEventType.ATTACK,
-			attacker: attacker.name,
-			target: target.name,
+			yield* this.emit({
+				type: BattleEventType.STATE_CHANGE,
+				from: oldState,
+				to: newState,
+			} satisfies Omit<StateChangeEvent, "timestamp">);
 		});
+	}
 
-		const damage = attacker.calculateDamage(target);
-		const isCritical = Math.random() < 0.1 + attacker.stats.luck * 0.02;
+	initialize(): Effect.Effect<void> {
+		return Effect.gen(this, function* () {
+			const context = yield* Ref.get(this.contextRef);
 
-		if (isCritical) {
-			const critDamage = Math.floor(damage * 1.5);
-			this.emit({
-				type: BattleEventType.CRITICAL,
+			yield* this.emit({
+				type: BattleEventType.BATTLE_START,
+				player: context.player.name,
+				enemy: context.enemy.name,
+			} satisfies Omit<BattleStartEvent, "timestamp">);
+
+			yield* this.emit({
+				type: BattleEventType.LOG,
+				message: `Battle started! ${context.player.name} vs ${context.enemy.name}`,
+			} satisfies Omit<LogEvent, "timestamp">);
+
+			const playerSpeed =
+				context.player.combatStats.speed + context.player.stats.dexterity;
+			const enemySpeed =
+				context.enemy.combatStats.speed + context.enemy.stats.dexterity;
+
+			const isPlayerFirst = playerSpeed >= enemySpeed;
+
+			yield* Ref.set(this.contextRef, {
+				...context,
+				isPlayerTurn: isPlayerFirst,
+			});
+
+			yield* this.emit({
+				type: BattleEventType.LOG,
+				message: isPlayerFirst
+					? `${context.player.name} moves first!`
+					: `${context.enemy.name} moves first!`,
+			} satisfies Omit<LogEvent, "timestamp">);
+
+			yield* this.transitionTo(BattleState.TURN_START);
+		});
+	}
+
+	startTurn(): Effect.Effect<void> {
+		return Effect.gen(this, function* () {
+			const context = yield* Ref.get(this.contextRef);
+
+			yield* Ref.set(this.contextRef, {
+				...context,
+				turnNumber: context.turnNumber + 1,
+			});
+
+			const updatedContext = yield* Ref.get(this.contextRef);
+			const actor = updatedContext.isPlayerTurn
+				? updatedContext.player
+				: updatedContext.enemy;
+
+			yield* this.emit({
+				type: BattleEventType.TURN_START,
+				actor: actor.name,
+				turnNumber: updatedContext.turnNumber,
+			} satisfies Omit<TurnStartEvent, "timestamp">);
+
+			yield* this.transitionTo(
+				updatedContext.isPlayerTurn
+					? BattleState.PLAYER_TURN
+					: BattleState.ENEMY_TURN,
+			);
+		});
+	}
+
+	executeAction(action: BattleAction): Effect.Effect<void, InvalidActionError> {
+		return Effect.gen(this, function* () {
+			const context = yield* Ref.get(this.contextRef);
+
+			if (context.currentState !== BattleState.PLAYER_TURN) {
+				return yield* Effect.fail(
+					new InvalidActionError({
+						action,
+						currentState: context.currentState,
+						message: `Cannot execute action ${action} in state ${context.currentState}`,
+					}),
+				);
+			}
+
+			yield* Ref.set(this.contextRef, {
+				...context,
+				playerAction: action,
+			});
+
+			yield* this.transitionTo(BattleState.PROCESSING_ACTION);
+
+			const updatedContext = yield* Ref.get(this.contextRef);
+
+			switch (action) {
+				case BattleAction.ATTACK:
+					yield* this.processAttack(
+						updatedContext.player,
+						updatedContext.enemy,
+					);
+					break;
+				case BattleAction.FLEE:
+					yield* this.processFlee();
+					break;
+				default:
+					yield* this.emit({
+						type: BattleEventType.LOG,
+						message: `${action} not yet implemented`,
+					} satisfies Omit<LogEvent, "timestamp">);
+			}
+
+			const currentContext = yield* Ref.get(this.contextRef);
+			if (currentContext.currentState === BattleState.PROCESSING_ACTION) {
+				yield* this.transitionTo(BattleState.CHECKING_VICTORY);
+			}
+		});
+	}
+
+	executeEnemyTurn(): Effect.Effect<void> {
+		return Effect.gen(this, function* () {
+			yield* this.transitionTo(BattleState.PROCESSING_ACTION);
+
+			const context = yield* Ref.get(this.contextRef);
+			yield* this.processAttack(context.enemy, context.player);
+
+			const currentContext = yield* Ref.get(this.contextRef);
+			if (currentContext.currentState === BattleState.PROCESSING_ACTION) {
+				yield* this.transitionTo(BattleState.CHECKING_VICTORY);
+			}
+		});
+	}
+
+	private processAttack(attacker: Entity, target: Entity): Effect.Effect<void> {
+		return Effect.gen(this, function* () {
+			yield* this.emit({
+				type: BattleEventType.ATTACK,
 				attacker: attacker.name,
-				damage: critDamage,
-			});
-			target.takeDamage(critDamage);
-			this.emit({
-				type: BattleEventType.DAMAGE,
 				target: target.name,
-				damage: critDamage,
-				remainingHealth: target.combatStats.health,
-			});
-			this.emit({
-				type: BattleEventType.LOG,
-				message: `Critical hit! ${attacker.name} deals ${critDamage} damage to ${target.name}!`,
-			});
-		} else {
-			target.takeDamage(damage);
-			this.emit({
-				type: BattleEventType.DAMAGE,
-				target: target.name,
-				damage,
-				remainingHealth: target.combatStats.health,
-			});
-			this.emit({
-				type: BattleEventType.LOG,
-				message: `${attacker.name} deals ${damage} damage to ${target.name}!`,
-			});
-		}
+			} satisfies Omit<AttackEvent, "timestamp">);
 
-		if (!target.isAlive()) {
-			this.emit({
-				type: BattleEventType.DEATH,
-				entity: target.name,
-			});
-			this.emit({
-				type: BattleEventType.LOG,
-				message: `${target.name} has been defeated!`,
-			});
-		}
-	}
+			const damage = attacker.calculateDamage(target);
+			const isCritical = Math.random() < 0.1 + attacker.stats.luck * 0.02;
 
-	private processFlee(): void {
-		const playerSpeed =
-			this.context.player.combatStats.speed +
-			this.context.player.stats.dexterity;
-		const enemySpeed =
-			this.context.enemy.combatStats.speed + this.context.enemy.stats.dexterity;
-		const fleeChance = 0.5 + (playerSpeed - enemySpeed) * 0.05;
-		const success = Math.random() < Math.max(0.2, Math.min(0.9, fleeChance));
+			if (isCritical) {
+				const critDamage = Math.floor(damage * 1.5);
+				yield* this.emit({
+					type: BattleEventType.CRITICAL,
+					attacker: attacker.name,
+					damage: critDamage,
+				} satisfies Omit<CriticalEvent, "timestamp">);
 
-		this.emit({
-			type: BattleEventType.FLEE,
-			success,
+				target.takeDamage(critDamage);
+
+				yield* this.emit({
+					type: BattleEventType.DAMAGE,
+					target: target.name,
+					damage: critDamage,
+					remainingHealth: target.combatStats.health,
+				} satisfies Omit<DamageEvent, "timestamp">);
+
+				yield* this.emit({
+					type: BattleEventType.LOG,
+					message: `Critical hit! ${attacker.name} deals ${critDamage} damage to ${target.name}!`,
+				} satisfies Omit<LogEvent, "timestamp">);
+			} else {
+				target.takeDamage(damage);
+
+				yield* this.emit({
+					type: BattleEventType.DAMAGE,
+					target: target.name,
+					damage,
+					remainingHealth: target.combatStats.health,
+				} satisfies Omit<DamageEvent, "timestamp">);
+
+				yield* this.emit({
+					type: BattleEventType.LOG,
+					message: `${attacker.name} deals ${damage} damage to ${target.name}!`,
+				} satisfies Omit<LogEvent, "timestamp">);
+			}
+
+			if (!target.isAlive()) {
+				yield* this.emit({
+					type: BattleEventType.DEATH,
+					entity: target.name,
+				} satisfies Omit<DeathEvent, "timestamp">);
+
+				yield* this.emit({
+					type: BattleEventType.LOG,
+					message: `${target.name} has been defeated!`,
+				} satisfies Omit<LogEvent, "timestamp">);
+			}
 		});
-
-		if (success) {
-			this.emit({
-				type: BattleEventType.LOG,
-				message: `${this.context.player.name} successfully fled from battle!`,
-			});
-			this.transitionTo(BattleState.FLED);
-		} else {
-			this.emit({
-				type: BattleEventType.LOG,
-				message: `${this.context.player.name} failed to flee!`,
-			});
-		}
 	}
 
-	checkVictoryConditions(): void {
-		if (!this.context.enemy.isAlive()) {
-			this.emit({
-				type: BattleEventType.VICTORY,
-				expGained: this.context.expReward,
-			});
-			this.emit({
-				type: BattleEventType.LOG,
-				message: `Victory! Gained ${this.context.expReward} experience!`,
-			});
-			this.transitionTo(BattleState.VICTORY);
-			return;
-		}
+	private processFlee(): Effect.Effect<void> {
+		return Effect.gen(this, function* () {
+			const context = yield* Ref.get(this.contextRef);
 
-		if (!this.context.player.isAlive()) {
-			this.emit({
-				type: BattleEventType.DEFEAT,
-			});
-			this.emit({
-				type: BattleEventType.LOG,
-				message: `${this.context.player.name} has been defeated...`,
-			});
-			this.transitionTo(BattleState.DEFEAT);
-			return;
-		}
+			const playerSpeed =
+				context.player.combatStats.speed + context.player.stats.dexterity;
+			const enemySpeed =
+				context.enemy.combatStats.speed + context.enemy.stats.dexterity;
+			const fleeChance = 0.5 + (playerSpeed - enemySpeed) * 0.05;
+			const success = Math.random() < Math.max(0.2, Math.min(0.9, fleeChance));
 
-		this.context.isPlayerTurn = !this.context.isPlayerTurn;
-		this.transitionTo(BattleState.TURN_START);
+			yield* this.emit({
+				type: BattleEventType.FLEE,
+				success,
+			} satisfies Omit<FleeEvent, "timestamp">);
+
+			if (success) {
+				yield* this.emit({
+					type: BattleEventType.LOG,
+					message: `${context.player.name} successfully fled from battle!`,
+				} satisfies Omit<LogEvent, "timestamp">);
+				yield* this.transitionTo(BattleState.FLED);
+			} else {
+				yield* this.emit({
+					type: BattleEventType.LOG,
+					message: `${context.player.name} failed to flee!`,
+				} satisfies Omit<LogEvent, "timestamp">);
+			}
+		});
 	}
 
-	isFinished(): boolean {
-		return (
-			this.context.currentState === BattleState.VICTORY ||
-			this.context.currentState === BattleState.DEFEAT ||
-			this.context.currentState === BattleState.FLED
-		);
+	checkVictoryConditions(): Effect.Effect<void> {
+		return Effect.gen(this, function* () {
+			const context = yield* Ref.get(this.contextRef);
+
+			if (!context.enemy.isAlive()) {
+				yield* this.emit({
+					type: BattleEventType.VICTORY,
+					expGained: context.expReward,
+				} satisfies Omit<VictoryEvent, "timestamp">);
+
+				yield* this.emit({
+					type: BattleEventType.LOG,
+					message: `Victory! Gained ${context.expReward} experience!`,
+				} satisfies Omit<LogEvent, "timestamp">);
+
+				yield* this.transitionTo(BattleState.VICTORY);
+				return;
+			}
+
+			if (!context.player.isAlive()) {
+				yield* this.emit({
+					type: BattleEventType.DEFEAT,
+				} satisfies Omit<DefeatEvent, "timestamp">);
+
+				yield* this.emit({
+					type: BattleEventType.LOG,
+					message: `${context.player.name} has been defeated...`,
+				} satisfies Omit<LogEvent, "timestamp">);
+
+				yield* this.transitionTo(BattleState.DEFEAT);
+				return;
+			}
+
+			yield* Ref.set(this.contextRef, {
+				...context,
+				isPlayerTurn: !context.isPlayerTurn,
+			});
+
+			yield* this.transitionTo(BattleState.TURN_START);
+		});
+	}
+
+	isFinished(): Effect.Effect<boolean> {
+		return Effect.gen(this, function* () {
+			const state = yield* this.getState();
+			return (
+				state === BattleState.VICTORY ||
+				state === BattleState.DEFEAT ||
+				state === BattleState.FLED
+			);
+		});
+	}
+
+	closeEventQueue(): Effect.Effect<void> {
+		return Queue.shutdown(this.eventQueue);
 	}
 }
