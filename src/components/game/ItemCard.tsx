@@ -25,7 +25,7 @@ export function ItemCard({
 	return (
 		<Card
 			className={cn(
-				"relative cursor-pointer transition-all hover:scale-105 border-2",
+				"relative cursor-pointer min-h-20 transition-all hover:scale-105 border-2",
 				RARITY_BORDER_COLORS[item.rarity],
 				compact ? "p-2" : "p-3",
 			)}
