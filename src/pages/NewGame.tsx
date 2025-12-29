@@ -11,7 +11,9 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { getClassName } from "@/data/heroClasses";
 import { useSavesValues } from "@/state/gameSaves";
+import { currentPlayerAtom, formatTimePlayed } from "@/state/playerState";
 
 // Local atom for selected save slot
 const selectedSlotAtom = Atom.make<number | null>(null);
@@ -20,6 +22,7 @@ export default function NewGamePage() {
 	const navigate = useNavigate();
 	const selectedSlot = useAtomValue(selectedSlotAtom);
 	const setSelectedSlot = useAtomSet(selectedSlotAtom);
+	const setCurrentPlayer = useAtomSet(currentPlayerAtom);
 
 	const gameSaves = useSavesValues();
 
@@ -29,9 +32,17 @@ export default function NewGamePage() {
 	};
 
 	const handleContinue = () => {
-		if (selectedSlot !== null) {
-			// TODO: Navigate to character creation or game with selected slot
-			console.log(`Starting game with slot ${selectedSlot}`);
+		if (selectedSlot === null) return;
+
+		const save = gameSaves[selectedSlot];
+
+		if (save) {
+			// Load existing save
+			setCurrentPlayer(save.playerData);
+			navigate("/gameLoop");
+		} else {
+			// New game - go to hero creation
+			navigate(`/heroCreation?slot=${selectedSlot}`);
 		}
 	};
 
@@ -81,7 +92,9 @@ export default function NewGamePage() {
 										)}
 									</CardTitle>
 									<CardDescription>
-										{slot == null ? "Start a new adventure" : slot.timePlayed}
+										{slot == null
+											? "Start a new adventure"
+											: `Level ${slot.level} ${getClassName(slot.playerClass)}`}
 									</CardDescription>
 								</CardHeader>
 								{!(slot == null) && (
@@ -89,9 +102,7 @@ export default function NewGamePage() {
 										<div className="rounded-lg border p-3">
 											<div className="space-y-1 text-sm">
 												<div className="flex items-center justify-between">
-													<span className="text-muted-foreground">
-														Character
-													</span>
+													<span className="text-muted-foreground">Name</span>
 													<span className="font-medium">{slot.playerName}</span>
 												</div>
 												<Separator className="my-2" />
@@ -108,7 +119,7 @@ export default function NewGamePage() {
 														Time played
 													</span>
 													<span className="text-foreground">
-														{slot.timePlayed}
+														{formatTimePlayed(slot.timePlayed)}
 													</span>
 												</div>
 											</div>
