@@ -5,8 +5,10 @@ import { CharacterStats } from "@/components/game/CharacterStats";
 import { EquipmentSlotComponent } from "@/components/game/EquipmentSlot";
 import { ItemCard } from "@/components/game/ItemCard";
 import { NavigationBar } from "@/components/game/NavigationBar";
+import { WorldMap } from "@/components/game/WorldMap";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { generateShopItems } from "@/data/items";
+import type { MapLocation } from "@/data/mapLocations";
 import {
 	currentViewAtom,
 	equippedItemsAtom,
@@ -16,7 +18,7 @@ import {
 	playerStatsAtom,
 	shopItemsAtom,
 } from "@/state/gameState";
-import { currentPlayerAtom } from "@/state/playerState";
+import { currentPlayerAtom, type PlayerData } from "@/state/playerState";
 import type { Item } from "@/types/equipment";
 import { EquipmentSlot } from "@/types/equipment";
 
@@ -68,6 +70,7 @@ export default function GameLoopPage() {
 	const setGold = useAtomSet(goldAtom);
 	const setShopItems = useAtomSet(shopItemsAtom);
 	const setLastShopRotation = useAtomSet(lastShopRotationAtom);
+	const setCurrentPlayer = useAtomSet(currentPlayerAtom);
 
 	// Shop rotation timer (5 minutes)
 	React.useEffect(() => {
@@ -91,6 +94,16 @@ export default function GameLoopPage() {
 		const interval = setInterval(checkRotation, 60 * 1000);
 		return () => clearInterval(interval);
 	}, [lastShopRotation, shopItems.length, setShopItems, setLastShopRotation]);
+
+	const handleLocationChange = (locationId: string) => {
+		if (!currentPlayer) return;
+
+		// Update player's location
+		setCurrentPlayer({
+			...currentPlayer,
+			location: locationId,
+		});
+	};
 
 	const handleEquipItem = (item: Item) => {
 		if (!item.slot) return;
@@ -227,7 +240,12 @@ export default function GameLoopPage() {
 
 					{/* Main Content Area */}
 					<div className="flex-1 overflow-y-auto">
-						{currentView === "map" && <MapView />}
+						{currentView === "map" && (
+							<MapView
+								currentPlayer={currentPlayer}
+								onLocationChange={handleLocationChange}
+							/>
+						)}
 						{currentView === "inventory" && (
 							<InventoryView
 								inventory={inventory}
@@ -255,16 +273,42 @@ export default function GameLoopPage() {
 
 // View Components
 
-function MapView() {
+interface MapViewProps {
+	currentPlayer: PlayerData | null;
+	onLocationChange: (location: string) => void;
+}
+
+function MapView({ currentPlayer, onLocationChange }: MapViewProps) {
+	const handleLocationSelect = (location: MapLocation) => {
+		onLocationChange(location.id);
+	};
+
+	if (!currentPlayer) {
+		return (
+			<Card>
+				<CardHeader>
+					<CardTitle>Map</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<div className="text-center text-muted-foreground py-8">
+						No player data available
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	return (
-		<Card>
+		<Card className="h-full">
 			<CardHeader>
-				<CardTitle>Map</CardTitle>
+				<CardTitle>World Map</CardTitle>
 			</CardHeader>
-			<CardContent>
-				<div className="text-center text-muted-foreground py-8">
-					Map view coming soon...
-				</div>
+			<CardContent className="h-[500px]">
+				<WorldMap
+					currentLocation={currentPlayer.location}
+					playerLevel={currentPlayer.level}
+					onLocationSelect={handleLocationSelect}
+				/>
 			</CardContent>
 		</Card>
 	);
