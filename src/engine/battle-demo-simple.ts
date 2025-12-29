@@ -2,7 +2,7 @@ import { Effect } from "effect";
 import { BattleSystem } from "./battle-system";
 import { type CombatStats, Entity } from "./entity";
 import { Monster } from "./monster";
-import { MONSTER_TEMPLATES } from "./monster-database";
+import { getMonsterTemplate } from "./monster-helpers";
 import type { Stats } from "./stats";
 
 class Hero extends Entity {
@@ -28,7 +28,7 @@ const simpleBattle = Effect.gen(function* () {
 	console.log("=== Simple Battle Demo ===\n");
 
 	const player = new Hero();
-	const goblin = new Monster(MONSTER_TEMPLATES.GOBLIN);
+	const goblin = new Monster(getMonsterTemplate("GOBLIN"));
 
 	console.log(`${player.name} vs ${goblin.name}`);
 	console.log(`Player HP: ${player.combatStats.health}`);

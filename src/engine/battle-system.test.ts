@@ -5,7 +5,7 @@ import { BattleState } from "./battle-fsm";
 import { BattleSystem } from "./battle-system";
 import { type CombatStats, Entity } from "./entity";
 import { Monster } from "./monster";
-import { MONSTER_TEMPLATES } from "./monster-database";
+import { getMonsterTemplate } from "./monster-helpers";
 import type { Stats } from "./stats";
 
 class TestPlayer extends Entity {
@@ -29,7 +29,7 @@ class TestPlayer extends Entity {
 describe("Battle System", () => {
 	test("should create battle system", async () => {
 		const player = new TestPlayer();
-		const slime = new Monster(MONSTER_TEMPLATES.SLIME);
+		const slime = new Monster(getMonsterTemplate("SLIME"));
 
 		const program = Effect.gen(function* () {
 			const battle = yield* BattleSystem.make(player, slime);
@@ -42,7 +42,7 @@ describe("Battle System", () => {
 
 	test("should initialize battle correctly", async () => {
 		const player = new TestPlayer();
-		const slime = new Monster(MONSTER_TEMPLATES.SLIME);
+		const slime = new Monster(getMonsterTemplate("SLIME"));
 
 		const program = Effect.gen(function* () {
 			const battle = yield* BattleSystem.make(player, slime);
@@ -57,7 +57,7 @@ describe("Battle System", () => {
 
 	test.skip("should stream events during battle", async () => {
 		const player = new TestPlayer();
-		const slime = new Monster(MONSTER_TEMPLATES.SLIME);
+		const slime = new Monster(getMonsterTemplate("SLIME"));
 
 		const program = Effect.gen(function* () {
 			const battle = yield* BattleSystem.make(player, slime);
@@ -90,7 +90,7 @@ describe("Battle System", () => {
 
 	test.skip("should complete a full auto battle", async () => {
 		const player = new TestPlayer();
-		const slime = new Monster(MONSTER_TEMPLATES.SLIME);
+		const slime = new Monster(getMonsterTemplate("SLIME"));
 
 		const program = BattleSystem.runBattle(player, slime);
 
@@ -104,7 +104,7 @@ describe("Battle System", () => {
 
 	test("player should defeat weak monster", async () => {
 		const player = new TestPlayer();
-		const slime = new Monster(MONSTER_TEMPLATES.SLIME);
+		const slime = new Monster(getMonsterTemplate("SLIME"));
 
 		const program = BattleSystem.runBattle(player, slime);
 
@@ -112,12 +112,12 @@ describe("Battle System", () => {
 
 		expect(result.victory).toBe(true);
 		expect(result.fled).toBe(false);
-		expect(result.expGained).toBe(MONSTER_TEMPLATES.SLIME.expReward);
+		expect(result.expGained).toBe(getMonsterTemplate("SLIME").expReward);
 	});
 
 	test("should handle player actions with Effect", async () => {
 		const player = new TestPlayer();
-		const goblin = new Monster(MONSTER_TEMPLATES.GOBLIN);
+		const goblin = new Monster(getMonsterTemplate("GOBLIN"));
 
 		const program = Effect.gen(function* () {
 			const battle = yield* BattleSystem.make(player, goblin);
@@ -149,7 +149,7 @@ describe("Battle System", () => {
 
 	test.skip("should collect all battle events", async () => {
 		const player = new TestPlayer();
-		const wolf = new Monster(MONSTER_TEMPLATES.WOLF);
+		const wolf = new Monster(getMonsterTemplate("WOLF"));
 
 		const program = BattleSystem.runBattle(player, wolf);
 
@@ -173,7 +173,7 @@ describe("Battle System", () => {
 			const results = [];
 
 			for (let i = 0; i < 3; i++) {
-				const enemy = new Monster(MONSTER_TEMPLATES.SLIME);
+				const enemy = new Monster(getMonsterTemplate("SLIME"));
 				const result = yield* BattleSystem.runBattle(player, enemy);
 				results.push(result);
 
@@ -199,9 +199,9 @@ describe("Battle System", () => {
 			const player2 = new TestPlayer();
 			const player3 = new TestPlayer();
 
-			const slime1 = new Monster(MONSTER_TEMPLATES.SLIME);
-			const slime2 = new Monster(MONSTER_TEMPLATES.SLIME);
-			const slime3 = new Monster(MONSTER_TEMPLATES.SLIME);
+			const slime1 = new Monster(getMonsterTemplate("SLIME"));
+			const slime2 = new Monster(getMonsterTemplate("SLIME"));
+			const slime3 = new Monster(getMonsterTemplate("SLIME"));
 
 			const [result1, result2, result3] = yield* Effect.all(
 				[

@@ -2,7 +2,7 @@ import { Effect } from "effect";
 import { BattleSystem } from "./battle-system";
 import { type CombatStats, Entity } from "./entity";
 import { Monster } from "./monster";
-import { MONSTER_TEMPLATES } from "./monster-database";
+import { getMonsterTemplate } from "./monster-helpers";
 import type { Stats } from "./stats";
 
 class Hero extends Entity {
@@ -37,9 +37,9 @@ const concurrentBattles = Effect.gen(function* () {
 	const hero2 = new Hero("Bob");
 	const hero3 = new Hero("Charlie");
 
-	const slime = new Monster(MONSTER_TEMPLATES.SLIME);
-	const goblin = new Monster(MONSTER_TEMPLATES.GOBLIN);
-	const wolf = new Monster(MONSTER_TEMPLATES.WOLF);
+	const slime = new Monster(getMonsterTemplate("SLIME"));
+	const goblin = new Monster(getMonsterTemplate("GOBLIN"));
+	const wolf = new Monster(getMonsterTemplate("WOLF"));
 
 	console.log("Starting battles:");
 	console.log(`- ${hero1.name} vs ${slime.name}`);

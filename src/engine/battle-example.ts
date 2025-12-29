@@ -3,7 +3,7 @@ import { BattleEventType } from "./battle-events";
 import { BattleSystem } from "./battle-system";
 import { type CombatStats, Entity } from "./entity";
 import { Monster } from "./monster";
-import { MONSTER_TEMPLATES } from "./monster-database";
+import { getMonsterTemplate } from "./monster-helpers";
 import type { Stats } from "./stats";
 
 class DemoPlayer extends Entity {
@@ -28,7 +28,7 @@ const runBattleDemo = Effect.gen(function* () {
 	console.log("=== Effect-Based Battle System Demo ===\n");
 
 	const player = new DemoPlayer();
-	const enemy = new Monster(MONSTER_TEMPLATES.GOBLIN);
+	const enemy = new Monster(getMonsterTemplate("GOBLIN"));
 
 	console.log(
 		`${player.name} (HP: ${player.combatStats.health}/${player.combatStats.maxHealth})`,
@@ -100,9 +100,9 @@ const runConcurrentBattles = Effect.gen(function* () {
 	const player2 = new DemoPlayer();
 	const player3 = new DemoPlayer();
 
-	const enemy1 = new Monster(MONSTER_TEMPLATES.SLIME);
-	const enemy2 = new Monster(MONSTER_TEMPLATES.GOBLIN);
-	const enemy3 = new Monster(MONSTER_TEMPLATES.WOLF);
+	const enemy1 = new Monster(getMonsterTemplate("SLIME"));
+	const enemy2 = new Monster(getMonsterTemplate("GOBLIN"));
+	const enemy3 = new Monster(getMonsterTemplate("WOLF"));
 
 	console.log("Starting 3 battles concurrently...\n");
 

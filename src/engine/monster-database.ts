@@ -176,7 +176,10 @@ export function getMonstersByLevel(level: number): MonsterTemplate[] {
 
 export function getRandomMonster(level: number): MonsterTemplate {
 	const availableMonsters = getMonstersByLevel(level);
-	return availableMonsters[
-		Math.floor(Math.random() * availableMonsters.length)
-	];
+	const monster =
+		availableMonsters[Math.floor(Math.random() * availableMonsters.length)];
+	if (!monster) {
+		throw new Error(`No monsters available for level ${level}`);
+	}
+	return monster;
 }

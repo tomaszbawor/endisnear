@@ -1,5 +1,4 @@
 import { Effect, Ref, Stream } from "effect";
-import type { BattleError } from "./battle-errors";
 import { BattleAlreadyFinishedError } from "./battle-errors";
 import type { BattleEvent } from "./battle-events";
 import { BattleAction, BattleFSM, BattleState } from "./battle-fsm";
@@ -72,20 +71,26 @@ export class BattleSystem {
 		});
 	}
 
-	playerAttack(): Effect.Effect<void, BattleError> {
+	playerAttack(): Effect.Effect<void, never> {
 		return Effect.gen(this, function* () {
 			const state = yield* this.fsm.getState();
 			if (state === BattleState.PLAYER_TURN) {
-				yield* this.fsm.executeAction(BattleAction.ATTACK);
+				yield* Effect.catchAll(
+					this.fsm.executeAction(BattleAction.ATTACK),
+					() => Effect.void,
+				);
 			}
 		});
 	}
 
-	playerFlee(): Effect.Effect<void, BattleError> {
+	playerFlee(): Effect.Effect<void, never> {
 		return Effect.gen(this, function* () {
 			const state = yield* this.fsm.getState();
 			if (state === BattleState.PLAYER_TURN) {
-				yield* this.fsm.executeAction(BattleAction.FLEE);
+				yield* Effect.catchAll(
+					this.fsm.executeAction(BattleAction.FLEE),
+					() => Effect.void,
+				);
 			}
 		});
 	}

@@ -1,4 +1,3 @@
-
 Default to using Bun instead of Node.js.
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
@@ -107,16 +106,59 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 
 ## Code Quality & Verification
 
-After making changes to the codebase, always verify that everything still works correctly by running:
+### MANDATORY: Pre-Commit Verification
+
+Before considering ANY task complete or accepting ANY changes, you MUST run both commands:
 
 ```sh
+# 1. TypeScript compilation check
+bun x tsc -b
+
+# 2. Full quality check (lint, format, test)
 bun run check
 ```
 
-This command will:
-- Run type checking
-- Run linting
-- Run tests
-- Ensure the build succeeds
+### Verification Workflow
 
-**IMPORTANT**: Always run `bun run check` before considering a task complete. If the check fails, fix the issues before proceeding.
+**ALWAYS follow this sequence:**
+
+1. Make your changes
+2. Run `bun x tsc -b` - Fix any TypeScript errors
+3. Run `bun run check` - Fix any lint/format/test failures
+4. Only after BOTH pass, consider the task complete
+
+### What Each Command Does
+
+**`bun x tsc -b`**
+
+- TypeScript compilation check
+- Verifies type correctness across entire project
+- Must pass with zero errors
+
+**`bun run check`**
+
+- Runs Biome linting and formatting
+- Auto-fixes issues when possible
+- Reports unfixable issues
+
+### Rules
+
+- **NEVER** skip these checks
+- **NEVER** commit code that doesn't pass both checks
+- **ALWAYS** fix issues before proceeding
+- If checks fail, treat it as a blocking error
+
+### Example Workflow
+
+```sh
+# After making changes...
+$ bun x tsc -b
+# ✓ All TypeScript checks passed
+
+$ bun run check
+# ✓ Checked 45 files. Fixed 2 files.
+
+# Now the task is complete ✓
+```
+
+**If either command fails, the task is NOT complete.**

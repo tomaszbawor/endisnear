@@ -1,20 +1,6 @@
 import { Effect, Queue, Ref, Schema, Stream } from "effect";
 import { InvalidActionError } from "./battle-errors";
-import {
-	type AttackEvent,
-	type BattleEvent,
-	BattleEventType,
-	type BattleStartEvent,
-	type CriticalEvent,
-	type DamageEvent,
-	type DeathEvent,
-	type DefeatEvent,
-	type FleeEvent,
-	type LogEvent,
-	type StateChangeEvent,
-	type TurnStartEvent,
-	type VictoryEvent,
-} from "./battle-events";
+import { type BattleEvent, BattleEventType } from "./battle-events";
 import type { Entity } from "./entity";
 
 export enum BattleState {
@@ -121,7 +107,7 @@ export class BattleFSM {
 				type: BattleEventType.STATE_CHANGE,
 				from: oldState,
 				to: newState,
-			} satisfies Omit<StateChangeEvent, "timestamp">);
+			} as Omit<BattleEvent, "timestamp">);
 		});
 	}
 
@@ -133,12 +119,12 @@ export class BattleFSM {
 				type: BattleEventType.BATTLE_START,
 				player: context.player.name,
 				enemy: context.enemy.name,
-			} satisfies Omit<BattleStartEvent, "timestamp">);
+			} as Omit<BattleEvent, "timestamp">);
 
 			yield* this.emit({
 				type: BattleEventType.LOG,
 				message: `Battle started! ${context.player.name} vs ${context.enemy.name}`,
-			} satisfies Omit<LogEvent, "timestamp">);
+			} as Omit<BattleEvent, "timestamp">);
 
 			const playerSpeed =
 				context.player.combatStats.speed + context.player.stats.dexterity;
@@ -157,7 +143,7 @@ export class BattleFSM {
 				message: isPlayerFirst
 					? `${context.player.name} moves first!`
 					: `${context.enemy.name} moves first!`,
-			} satisfies Omit<LogEvent, "timestamp">);
+			} as Omit<BattleEvent, "timestamp">);
 
 			yield* this.transitionTo(BattleState.TURN_START);
 		});
@@ -181,7 +167,7 @@ export class BattleFSM {
 				type: BattleEventType.TURN_START,
 				actor: actor.name,
 				turnNumber: updatedContext.turnNumber,
-			} satisfies Omit<TurnStartEvent, "timestamp">);
+			} as Omit<BattleEvent, "timestamp">);
 
 			yield* this.transitionTo(
 				updatedContext.isPlayerTurn
@@ -228,7 +214,7 @@ export class BattleFSM {
 					yield* this.emit({
 						type: BattleEventType.LOG,
 						message: `${action} not yet implemented`,
-					} satisfies Omit<LogEvent, "timestamp">);
+					} as Omit<BattleEvent, "timestamp">);
 			}
 
 			const currentContext = yield* Ref.get(this.contextRef);
@@ -258,7 +244,7 @@ export class BattleFSM {
 				type: BattleEventType.ATTACK,
 				attacker: attacker.name,
 				target: target.name,
-			} satisfies Omit<AttackEvent, "timestamp">);
+			} as Omit<BattleEvent, "timestamp">);
 
 			const damage = attacker.calculateDamage(target);
 			const isCritical = Math.random() < 0.1 + attacker.stats.luck * 0.02;
@@ -269,7 +255,7 @@ export class BattleFSM {
 					type: BattleEventType.CRITICAL,
 					attacker: attacker.name,
 					damage: critDamage,
-				} satisfies Omit<CriticalEvent, "timestamp">);
+				} as Omit<BattleEvent, "timestamp">);
 
 				target.takeDamage(critDamage);
 
@@ -278,12 +264,12 @@ export class BattleFSM {
 					target: target.name,
 					damage: critDamage,
 					remainingHealth: target.combatStats.health,
-				} satisfies Omit<DamageEvent, "timestamp">);
+				} as Omit<BattleEvent, "timestamp">);
 
 				yield* this.emit({
 					type: BattleEventType.LOG,
 					message: `Critical hit! ${attacker.name} deals ${critDamage} damage to ${target.name}!`,
-				} satisfies Omit<LogEvent, "timestamp">);
+				} as Omit<BattleEvent, "timestamp">);
 			} else {
 				target.takeDamage(damage);
 
@@ -292,24 +278,24 @@ export class BattleFSM {
 					target: target.name,
 					damage,
 					remainingHealth: target.combatStats.health,
-				} satisfies Omit<DamageEvent, "timestamp">);
+				} as Omit<BattleEvent, "timestamp">);
 
 				yield* this.emit({
 					type: BattleEventType.LOG,
 					message: `${attacker.name} deals ${damage} damage to ${target.name}!`,
-				} satisfies Omit<LogEvent, "timestamp">);
+				} as Omit<BattleEvent, "timestamp">);
 			}
 
 			if (!target.isAlive()) {
 				yield* this.emit({
 					type: BattleEventType.DEATH,
 					entity: target.name,
-				} satisfies Omit<DeathEvent, "timestamp">);
+				} as Omit<BattleEvent, "timestamp">);
 
 				yield* this.emit({
 					type: BattleEventType.LOG,
 					message: `${target.name} has been defeated!`,
-				} satisfies Omit<LogEvent, "timestamp">);
+				} as Omit<BattleEvent, "timestamp">);
 			}
 		});
 	}
@@ -328,19 +314,19 @@ export class BattleFSM {
 			yield* this.emit({
 				type: BattleEventType.FLEE,
 				success,
-			} satisfies Omit<FleeEvent, "timestamp">);
+			} as Omit<BattleEvent, "timestamp">);
 
 			if (success) {
 				yield* this.emit({
 					type: BattleEventType.LOG,
 					message: `${context.player.name} successfully fled from battle!`,
-				} satisfies Omit<LogEvent, "timestamp">);
+				} as Omit<BattleEvent, "timestamp">);
 				yield* this.transitionTo(BattleState.FLED);
 			} else {
 				yield* this.emit({
 					type: BattleEventType.LOG,
 					message: `${context.player.name} failed to flee!`,
-				} satisfies Omit<LogEvent, "timestamp">);
+				} as Omit<BattleEvent, "timestamp">);
 			}
 		});
 	}
@@ -353,12 +339,12 @@ export class BattleFSM {
 				yield* this.emit({
 					type: BattleEventType.VICTORY,
 					expGained: context.expReward,
-				} satisfies Omit<VictoryEvent, "timestamp">);
+				} as Omit<BattleEvent, "timestamp">);
 
 				yield* this.emit({
 					type: BattleEventType.LOG,
 					message: `Victory! Gained ${context.expReward} experience!`,
-				} satisfies Omit<LogEvent, "timestamp">);
+				} as Omit<BattleEvent, "timestamp">);
 
 				yield* this.transitionTo(BattleState.VICTORY);
 				return;
@@ -367,12 +353,12 @@ export class BattleFSM {
 			if (!context.player.isAlive()) {
 				yield* this.emit({
 					type: BattleEventType.DEFEAT,
-				} satisfies Omit<DefeatEvent, "timestamp">);
+				} as Omit<BattleEvent, "timestamp">);
 
 				yield* this.emit({
 					type: BattleEventType.LOG,
 					message: `${context.player.name} has been defeated...`,
-				} satisfies Omit<LogEvent, "timestamp">);
+				} as Omit<BattleEvent, "timestamp">);
 
 				yield* this.transitionTo(BattleState.DEFEAT);
 				return;
