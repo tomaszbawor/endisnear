@@ -2,11 +2,6 @@ import { Atom, useAtomValue } from "@effect-atom/atom-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { currentPlayerAtom } from "@/state/playerState";
-import type { PlayerStats } from "@/types/equipment";
-
-interface CharacterStatsProps {
-	stats: PlayerStats;
-}
 
 const expPercentageAtom = Atom.make((get) => {
 	const hero = get(currentPlayerAtom);
@@ -15,7 +10,7 @@ const expPercentageAtom = Atom.make((get) => {
 	return (hero?.currentExp / hero?.expToNextLevel) * 100;
 });
 
-export function CharacterStats({ stats }: CharacterStatsProps) {
+export function CharacterStats() {
 	const expPercentage = useAtomValue(expPercentageAtom);
 	const hero = useAtomValue(currentPlayerAtom);
 
@@ -28,7 +23,7 @@ export function CharacterStats({ stats }: CharacterStatsProps) {
 				{/* Level & EXP */}
 				<div>
 					<div className="flex justify-between text-sm mb-1">
-						<span className="font-semibold">Level {stats.level}</span>
+						<span className="font-semibold">Level {hero?.level}</span>
 						<span className="text-muted-foreground">
 							{hero?.currentExp} / {hero?.expToNextLevel} EXP
 						</span>
@@ -38,29 +33,13 @@ export function CharacterStats({ stats }: CharacterStatsProps) {
 
 				{/* Stats Grid */}
 				<div className="grid grid-cols-2 gap-2 text-sm">
-					<StatItem icon="⚔️" label="ATK" value={stats.totalStats.attack ?? 0} />
-					<StatItem
-						icon="🛡️"
-						label="DEF"
-						value={stats.totalStats.defense ?? 0}
-					/>
-					<StatItem icon="❤️" label="HP" value={stats.totalStats.health ?? 0} />
-					<StatItem icon="⚡" label="SPD" value={stats.totalStats.speed ?? 0} />
-					<StatItem
-						icon="💪"
-						label="STR"
-						value={stats.totalStats.strength ?? 0}
-					/>
-					<StatItem
-						icon="🎯"
-						label="DEX"
-						value={stats.totalStats.dexterity ?? 0}
-					/>
-					<StatItem
-						icon="🧠"
-						label="INT"
-						value={stats.totalStats.intelligence ?? 0}
-					/>
+					<StatItem icon="⚔️" label="ATK" value={hero?.stats.attack ?? 0} />
+					<StatItem icon="🛡️" label="DEF" value={hero?.stats.defense ?? 0} />
+					<StatItem icon="❤️" label="HP" value={hero?.stats.health ?? 0} />
+					<StatItem icon="⚡" label="SPD" value={hero?.stats.speed ?? 0} />
+					<StatItem icon="💪" label="STR" value={hero?.stats.strength ?? 0} />
+					<StatItem icon="🎯" label="DEX" value={hero?.stats.dexterity ?? 0} />
+					<StatItem icon="🧠" label="INT" value={hero?.stats.dexterity ?? 0} />
 				</div>
 			</CardContent>
 		</Card>

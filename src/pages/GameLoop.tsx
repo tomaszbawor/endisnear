@@ -266,7 +266,7 @@ export default function GameLoopPage() {
 				<div className="flex-1 flex gap-4 overflow-hidden">
 					{/* Left Sidebar - Character Stats */}
 					<div className="w-64 shrink-0 overflow-y-auto">
-						<CharacterStats stats={playerStats} />
+						<CharacterStats />
 					</div>
 
 					{/* Main Content Area */}
