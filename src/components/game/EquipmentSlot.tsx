@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
+import type { EquipmentSlot, Item } from "@/engine/player/Equipment";
+import { RARITY_BORDER_COLORS, SLOT_NAMES } from "@/engine/player/Equipment";
 import { cn } from "@/lib/utils";
-import type { EquipmentSlot, Item } from "@/types/equipment";
-import { RARITY_BORDER_COLORS, SLOT_NAMES } from "@/types/equipment";
 
 interface EquipmentSlotProps {
 	slot: EquipmentSlot;

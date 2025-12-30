@@ -1,7 +1,7 @@
 import { BattleView } from "@/components/game/BattleView";
+import type { EquipmentSlot, Item } from "@/engine/player/Equipment";
 import type { PlayerData } from "@/engine/player/Player";
 import type { GameView } from "@/state/gameState";
-import type { EquipmentSlot, Item } from "@/types/equipment";
 import { InventoryView } from "./InventoryView";
 import { MapView } from "./MapView";
 import { SettingsView } from "./SettingsView";

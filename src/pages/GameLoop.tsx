@@ -4,6 +4,7 @@ import GameContainer from "@/components/custom/GameContainer";
 import { CharacterStats } from "@/components/game/CharacterStats";
 import { NavigationBar } from "@/components/game/NavigationBar";
 import { generateShopItems } from "@/data/items";
+import type { EquipmentSlot, Item } from "@/engine/player/Equipment";
 import {
 	currentViewAtom,
 	equippedItemsAtom,
@@ -13,7 +14,6 @@ import {
 	shopItemsAtom,
 } from "@/state/gameState";
 import { currentPlayerAtom } from "@/state/playerState";
-import type { EquipmentSlot, Item } from "@/types/equipment";
 import { GameLoopSubview } from "./gameloop/GameLoopSubview";
 
 // /**

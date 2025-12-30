@@ -1,4 +1,4 @@
-import type { Item } from "@/types/equipment";
+import type { Item } from "@/engine/player/Equipment";
 
 /**
  * Sample items database

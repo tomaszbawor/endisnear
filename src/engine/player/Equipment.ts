@@ -4,16 +4,6 @@
 
 import { Schema } from "effect";
 
-export interface ItemStats {
-	attack?: number;
-	defense?: number;
-	health?: number;
-	speed?: number;
-	strength?: number;
-	dexterity?: number;
-	intelligence?: number;
-}
-
 const ItemStatsSchema = Schema.Struct({
 	attack: Schema.optional(Schema.Number),
 	defense: Schema.optional(Schema.Number),
@@ -23,6 +13,8 @@ const ItemStatsSchema = Schema.Struct({
 	dexterity: Schema.optional(Schema.Number),
 	intelligence: Schema.optional(Schema.Number),
 });
+
+export type ItemStats = typeof ItemStatsSchema.Type;
 
 const EquipmentSlotSchema = Schema.Literal(
 	"HEAD",
@@ -67,35 +59,12 @@ const ItemSchema = Schema.Struct({
 
 export type Item = typeof ItemSchema.Type;
 
-// export interface Item {
-// 	id: string;
-// 	name: string;
-// 	description: string;
-// 	type: ItemType;
-// 	rarity: ItemRarity;
-// 	slot?: EquipmentSlot; // Only for equippable items
-// 	stats: ItemStats;
-// 	price: number;
-// 	iconUrl?: string; // For future icon support
-// }
-//
-
 const EquippedItemsSchema = Schema.Record({
 	key: EquipmentSlotSchema,
 	value: ItemSchema,
 }).pipe(Schema.partial);
 
 export type EquippedItems = typeof EquippedItemsSchema.Type;
-
-// export interface EquippedItems {
-// 	[EquipmentSlot.HEAD]?: Item;
-// 	[EquipmentSlot.TORSO]?: Item;
-// 	[EquipmentSlot.LEGS]?: Item;
-// 	[EquipmentSlot.MAINHAND]?: Item;
-// 	[EquipmentSlot.OFFHAND]?: Item;
-// 	[EquipmentSlot.RING]?: Item;
-// 	[EquipmentSlot.NECKLACE]?: Item;
-// }
 
 export interface InventorySlot {
 	item: Item | null;

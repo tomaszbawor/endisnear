@@ -1,7 +1,7 @@
 import React from "react";
 import { ItemCard } from "@/components/game/ItemCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Item } from "@/types/equipment";
+import type { Item } from "@/engine/player/Equipment";
 
 interface ShopViewProps {
 	shopItems: Item[];

@@ -1,7 +1,7 @@
 import { EquipmentSlotComponent } from "@/components/game/EquipmentSlot";
 import { ItemCard } from "@/components/game/ItemCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { EquipmentSlot, Item } from "@/types/equipment";
+import type { EquipmentSlot, Item } from "@/engine/player/Equipment";
 
 interface InventoryViewProps {
 	inventory: Array<{ item: Item | null; quantity: number }>;

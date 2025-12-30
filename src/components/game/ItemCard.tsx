@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
+import type { Item } from "@/engine/player/Equipment";
+import { RARITY_BORDER_COLORS, RARITY_COLORS } from "@/engine/player/Equipment";
 import { cn } from "@/lib/utils";
-import type { Item } from "@/types/equipment";
-import { RARITY_BORDER_COLORS, RARITY_COLORS } from "@/types/equipment";
 
 interface ItemCardProps {
 	item: Item;
