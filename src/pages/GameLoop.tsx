@@ -16,40 +16,39 @@ import { currentPlayerAtom } from "@/state/playerState";
 import type { EquipmentSlot, Item } from "@/types/equipment";
 import { GameLoopSubview } from "./gameloop/GameLoopSubview";
 
-/**
- * Calculate total stats from equipped items
- */
-function calculateTotalStats(equipment: Record<string, Item | undefined>) {
-	const baseStats = {
-		attack: 10,
-		defense: 5,
-		health: 100,
-		speed: 10,
-		strength: 5,
-		dexterity: 5,
-		intelligence: 5,
-	};
-
-	const totalStats = { ...baseStats };
-
-	for (const item of Object.values(equipment)) {
-		if (!item) continue;
-		if (item.stats.attack) totalStats.attack += item.stats.attack;
-		if (item.stats.defense) totalStats.defense += item.stats.defense;
-		if (item.stats.health) totalStats.health += item.stats.health;
-		if (item.stats.speed) totalStats.speed += item.stats.speed;
-		if (item.stats.strength) totalStats.strength += item.stats.strength;
-		if (item.stats.dexterity) totalStats.dexterity += item.stats.dexterity;
-		if (item.stats.intelligence)
-			totalStats.intelligence += item.stats.intelligence;
-	}
-
-	return { baseStats, totalStats };
-}
+// /**
+//  * Calculate total stats from equipped items
+//  */
+// function calculateTotalStats(equipment: Record<string, Item | undefined>) {
+// 	const baseStats = {
+// 		attack: 10,
+// 		defense: 5,
+// 		health: 100,
+// 		speed: 10,
+// 		strength: 5,
+// 		dexterity: 5,
+// 		intelligence: 5,
+// 	};
+//
+// 	const totalStats = { ...baseStats };
+//
+// 	for (const item of Object.values(equipment)) {
+// 		if (!item) continue;
+// 		if (item.stats.attack) totalStats.attack += item.stats.attack;
+// 		if (item.stats.defense) totalStats.defense += item.stats.defense;
+// 		if (item.stats.health) totalStats.health += item.stats.health;
+// 		if (item.stats.speed) totalStats.speed += item.stats.speed;
+// 		if (item.stats.strength) totalStats.strength += item.stats.strength;
+// 		if (item.stats.dexterity) totalStats.dexterity += item.stats.dexterity;
+// 		if (item.stats.intelligence)
+// 			totalStats.intelligence += item.stats.intelligence;
+// 	}
+//
+// 	return { baseStats, totalStats };
+// }
 
 export default function GameLoopPage() {
 	const currentView = useAtomValue(currentViewAtom);
-	const playerStats = useAtomValue(currentPlayerAtom);
 	const equippedItems = useAtomValue(equippedItemsAtom);
 	const inventory = useAtomValue(inventoryAtom);
 	const gold = useAtomValue(goldAtom);
@@ -60,7 +59,6 @@ export default function GameLoopPage() {
 	const setCurrentView = useAtomSet(currentViewAtom);
 	const setEquippedItems = useAtomSet(equippedItemsAtom);
 	const setInventory = useAtomSet(inventoryAtom);
-	const setPlayerStats = useAtomSet(currentPlayerAtom);
 	const setGold = useAtomSet(goldAtom);
 	const setShopItems = useAtomSet(shopItemsAtom);
 	const setLastShopRotation = useAtomSet(lastShopRotationAtom);
@@ -170,14 +168,7 @@ export default function GameLoopPage() {
 		const newInventory = [...inventory];
 		newInventory[inventoryIndex] = { item: null, quantity: 0 };
 		setInventory(newInventory);
-
-		// Recalculate stats
-		const { baseStats, totalStats } = calculateTotalStats(newEquipment);
-		setPlayerStats({
-			...playerStats,
-			baseStats,
-			totalStats,
-		});
+		// TODO: Implement stat recalculation
 	};
 
 	const handleUnequipItem = (slot: EquipmentSlot) => {
@@ -202,13 +193,7 @@ export default function GameLoopPage() {
 		const newEquipment = { ...equippedItems, [slot]: undefined };
 		setEquippedItems(newEquipment);
 
-		// Recalculate stats
-		const { baseStats, totalStats } = calculateTotalStats(newEquipment);
-		setPlayerStats({
-			...playerStats,
-			baseStats,
-			totalStats,
-		});
+		// TODO: Implement stat recalculation
 	};
 
 	// Todo: remove to some global management class
