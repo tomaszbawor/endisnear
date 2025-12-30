@@ -13,7 +13,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { getClassName } from "@/data/heroClasses";
 import { useSavesValues } from "@/state/gameSaves";
-import { currentPlayerAtom, formatTimePlayed } from "@/state/playerState";
+import { currentPlayerAtom } from "@/state/playerState";
+import { formatTimePlayed } from "@/utils/timePeriodFormatter";
 
 // Local atom for selected save slot
 const selectedSlotAtom = Atom.make<number | null>(null);
