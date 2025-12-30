@@ -1,8 +1,7 @@
 import { EquipmentSlotComponent } from "@/components/game/EquipmentSlot";
 import { ItemCard } from "@/components/game/ItemCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Item } from "@/types/equipment";
-import { EquipmentSlot } from "@/types/equipment";
+import type { EquipmentSlot, Item } from "@/types/equipment";
 
 interface InventoryViewProps {
 	inventory: Array<{ item: Item | null; quantity: number }>;
@@ -30,51 +29,51 @@ export function InventoryView({
 						{/* Top row */}
 						<div />
 						<EquipmentSlotComponent
-							slot={EquipmentSlot.HEAD}
-							item={equippedItems[EquipmentSlot.HEAD]}
+							slot={"HEAD"}
+							item={equippedItems.HEAD}
 							onDrop={onEquipItem}
-							onRemove={() => onUnequipItem(EquipmentSlot.HEAD)}
+							onRemove={() => onUnequipItem("HEAD")}
 						/>
 						<div />
 
 						{/* Middle row */}
 						<EquipmentSlotComponent
-							slot={EquipmentSlot.MAINHAND}
-							item={equippedItems[EquipmentSlot.MAINHAND]}
+							slot={"MAINHAND"}
+							item={equippedItems.MAINHAND}
 							onDrop={onEquipItem}
-							onRemove={() => onUnequipItem(EquipmentSlot.MAINHAND)}
+							onRemove={() => onUnequipItem("MAINHAND")}
 						/>
 						<EquipmentSlotComponent
-							slot={EquipmentSlot.TORSO}
-							item={equippedItems[EquipmentSlot.TORSO]}
+							slot={"TORSO"}
+							item={equippedItems.TORSO}
 							onDrop={onEquipItem}
-							onRemove={() => onUnequipItem(EquipmentSlot.TORSO)}
+							onRemove={() => onUnequipItem("TORSO")}
 						/>
 						<EquipmentSlotComponent
-							slot={EquipmentSlot.OFFHAND}
-							item={equippedItems[EquipmentSlot.OFFHAND]}
+							slot={"OFFHAND"}
+							item={equippedItems.OFFHAND}
 							onDrop={onEquipItem}
-							onRemove={() => onUnequipItem(EquipmentSlot.OFFHAND)}
+							onRemove={() => onUnequipItem("OFFHAND")}
 						/>
 
 						{/* Bottom row */}
 						<EquipmentSlotComponent
-							slot={EquipmentSlot.RING}
-							item={equippedItems[EquipmentSlot.RING]}
+							slot={"RING"}
+							item={equippedItems.RING}
 							onDrop={onEquipItem}
-							onRemove={() => onUnequipItem(EquipmentSlot.RING)}
+							onRemove={() => onUnequipItem("RING")}
 						/>
 						<EquipmentSlotComponent
-							slot={EquipmentSlot.LEGS}
-							item={equippedItems[EquipmentSlot.LEGS]}
+							slot={"LEGS"}
+							item={equippedItems.LEGS}
 							onDrop={onEquipItem}
-							onRemove={() => onUnequipItem(EquipmentSlot.LEGS)}
+							onRemove={() => onUnequipItem("LEGS")}
 						/>
 						<EquipmentSlotComponent
-							slot={EquipmentSlot.NECKLACE}
-							item={equippedItems[EquipmentSlot.NECKLACE]}
+							slot={"NECKLACE"}
+							item={equippedItems.NECKLACE}
 							onDrop={onEquipItem}
-							onRemove={() => onUnequipItem(EquipmentSlot.NECKLACE)}
+							onRemove={() => onUnequipItem("NECKLACE")}
 						/>
 					</div>
 				</CardContent>

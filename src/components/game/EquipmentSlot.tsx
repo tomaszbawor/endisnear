@@ -65,19 +65,19 @@ export function EquipmentSlotComponent({
  */
 function getSlotIcon(slot: EquipmentSlot): string {
 	switch (slot) {
-		case "head":
+		case "HEAD":
 			return "🎩";
-		case "torso":
+		case "TORSO":
 			return "👕";
-		case "legs":
+		case "LEGS":
 			return "👖";
-		case "mainhand":
+		case "MAINHAND":
 			return "⚔️";
-		case "offhand":
+		case "OFFHAND":
 			return "🛡️";
-		case "ring":
+		case "RING":
 			return "💍";
-		case "necklace":
+		case "NECKLACE":
 			return "📿";
 		default:
 			return "❓";

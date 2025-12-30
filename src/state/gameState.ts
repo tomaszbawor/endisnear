@@ -1,10 +1,9 @@
 import { Atom } from "@effect-atom/atom-react";
-import {
-	EquipmentSlot,
-	type EquippedItems,
-	type InventorySlot,
-	type Item,
-	type PlayerStats,
+import type {
+	EquippedItems,
+	InventorySlot,
+	Item,
+	PlayerStats,
 } from "@/types/equipment";
 
 /**
@@ -38,13 +37,13 @@ import {
  * Equipped items atom - current equipment in each slot
  */
 export const equippedItemsAtom = Atom.make<EquippedItems>({
-	[EquipmentSlot.HEAD]: undefined,
-	[EquipmentSlot.TORSO]: undefined,
-	[EquipmentSlot.LEGS]: undefined,
-	[EquipmentSlot.MAINHAND]: undefined,
-	[EquipmentSlot.OFFHAND]: undefined,
-	[EquipmentSlot.RING]: undefined,
-	[EquipmentSlot.NECKLACE]: undefined,
+	HEAD: undefined,
+	TORSO: undefined,
+	LEGS: undefined,
+	MAINHAND: undefined,
+	OFFHAND: undefined,
+	RING: undefined,
+	NECKLACE: undefined,
 });
 
 /**

@@ -10,8 +10,6 @@ const GameSaveSchema = Schema.Struct({
 	location: Schema.String,
 	timePlayed: Schema.Number,
 	lastPlayed: Schema.Number,
-	// Full player data for continuing the game
-	// TODO: Replace with player Schema
 	playerData: PlayerDataSchema,
 });
 
