@@ -1,7 +1,7 @@
 import { WorldMap } from "@/components/game/WorldMap";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { MapLocation } from "@/data/mapLocations";
-import type { PlayerData } from "@/state/playerState";
+import type { PlayerData } from "@/engine/player/Player";
 
 interface MapViewProps {
 	currentPlayer: PlayerData | null;

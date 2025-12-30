@@ -10,6 +10,7 @@ import { BattleSystem } from "@/engine/battle-system";
 import type { CombatStats } from "@/engine/entity";
 import { Entity } from "@/engine/entity";
 import { Monster, type MonsterTemplate } from "@/engine/monster";
+import type { PlayerData } from "@/engine/player/Player";
 import type { Stats } from "@/engine/stats";
 import {
 	battleEntitiesAtom,
@@ -18,7 +19,6 @@ import {
 	deathStateAtom,
 	logIdCounterAtom,
 } from "@/state/battleAtoms";
-import type { PlayerData } from "@/state/playerState";
 import { formatBattleEvent } from "@/utils/battleEventFormatter";
 
 // Hero class that uses player data
@@ -35,7 +35,7 @@ class Hero extends Entity {
 			dexterity: playerData.stats.dexterity,
 			intelligence: playerData.stats.intelligence,
 			// TODO: FIIIIIX THIS
-			willpower: 6, // Default values not in player stats
+			willpower: 3,
 			luck: 4,
 		};
 		this.combatStats = {

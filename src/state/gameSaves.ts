@@ -1,7 +1,7 @@
 import { Atom, useAtomSet, useAtomValue } from "@effect-atom/atom-react";
 import { Schema } from "effect";
+import { type PlayerData, PlayerDataSchema } from "@/engine/player/Player";
 import { atomRuntime } from "./atomRuntime";
-import type { PlayerData } from "./playerState";
 
 const GameSaveSchema = Schema.Struct({
 	playerName: Schema.String,
@@ -11,36 +11,11 @@ const GameSaveSchema = Schema.Struct({
 	timePlayed: Schema.Number,
 	lastPlayed: Schema.Number,
 	// Full player data for continuing the game
-	playerData: Schema.Struct({
-		name: Schema.String,
-		class: Schema.Literal("warrior", "mage", "rogue"),
-		level: Schema.Number,
-		currentExp: Schema.Number,
-		expToNextLevel: Schema.Number,
-		stats: Schema.Struct({
-			strength: Schema.Number,
-			dexterity: Schema.Number,
-			intelligence: Schema.Number,
-			health: Schema.Number,
-			currentHealth: Schema.Number,
-			attack: Schema.Number,
-			defense: Schema.Number,
-			speed: Schema.Number,
-		}),
-		gold: Schema.Number,
-		location: Schema.String,
-		timePlayed: Schema.Number,
-		lastPlayed: Schema.Number,
-	}),
+	// TODO: Replace with player Schema
+	playerData: PlayerDataSchema,
 });
 
 export interface GameSave {
-	playerName: string;
-	playerClass: "warrior" | "mage" | "rogue";
-	level: number;
-	location: string;
-	timePlayed: number;
-	lastPlayed: number;
 	playerData: PlayerData;
 }
 

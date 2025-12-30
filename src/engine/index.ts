@@ -29,6 +29,5 @@ export {
 	getRandomMonster,
 	MONSTER_TEMPLATES,
 } from "./monster-database";
-export { Player } from "./player";
 export { Stats } from "./stats";
 export { Exp } from "./xp";

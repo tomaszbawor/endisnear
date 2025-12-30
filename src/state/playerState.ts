@@ -1,57 +1,8 @@
 import { Atom } from "@effect-atom/atom";
 import { Schema } from "effect";
 import type { HeroClass } from "@/data/heroClasses";
+import { type PlayerData, PlayerDataSchema } from "@/engine/player/Player";
 import { atomRuntime } from "./atomRuntime";
-
-/**
- * Player character data
- */
-export interface PlayerData {
-	name: string;
-	class: HeroClass;
-	level: number;
-	currentExp: number;
-	expToNextLevel: number;
-	stats: {
-		strength: number;
-		dexterity: number;
-		intelligence: number;
-		health: number;
-		currentHealth: number;
-		attack: number;
-		defense: number;
-		speed: number;
-	};
-	gold: number;
-	location: string;
-	timePlayed: number; // in seconds
-	lastPlayed: number; // timestamp
-}
-
-/**
- * Schema for player data validation
- */
-const PlayerDataSchema = Schema.Struct({
-	name: Schema.String,
-	class: Schema.Literal("warrior", "mage", "rogue"),
-	level: Schema.Number,
-	currentExp: Schema.Number,
-	expToNextLevel: Schema.Number,
-	stats: Schema.Struct({
-		strength: Schema.Number,
-		dexterity: Schema.Number,
-		intelligence: Schema.Number,
-		health: Schema.Number,
-		currentHealth: Schema.Number,
-		attack: Schema.Number,
-		defense: Schema.Number,
-		speed: Schema.Number,
-	}),
-	gold: Schema.Number,
-	location: Schema.String,
-	timePlayed: Schema.Number,
-	lastPlayed: Schema.Number,
-});
 
 /**
  * Current player state atom (null when no active game)
