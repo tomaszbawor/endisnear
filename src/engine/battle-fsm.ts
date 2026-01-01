@@ -33,7 +33,6 @@ export interface BattleContext {
 }
 
 const _BattleStateSchema = Schema.Literal(
-	BattleState.INITIALIZING,
 	BattleState.TURN_START,
 	BattleState.PLAYER_TURN,
 	BattleState.ENEMY_TURN,
@@ -308,6 +307,7 @@ export class BattleFSM {
 				context.player.combatStats.speed + context.player.stats.dexterity;
 			const enemySpeed =
 				context.enemy.combatStats.speed + context.enemy.stats.dexterity;
+
 			const fleeChance = 0.5 + (playerSpeed - enemySpeed) * 0.05;
 			const success = Math.random() < Math.max(0.2, Math.min(0.9, fleeChance));
 

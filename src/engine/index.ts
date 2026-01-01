@@ -30,4 +30,3 @@ export {
 	MONSTER_TEMPLATES,
 } from "./monster-database";
 export { Stats } from "./stats";
-export { Exp } from "./xp";
