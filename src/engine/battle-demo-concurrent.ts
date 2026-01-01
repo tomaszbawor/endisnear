@@ -12,6 +12,7 @@ class Hero extends Entity {
 		dexterity: 8,
 		intelligence: 5,
 		willpower: 6,
+		speed: 1,
 		luck: 4,
 	};
 	combatStats: CombatStats = {

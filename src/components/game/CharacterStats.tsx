@@ -35,9 +35,10 @@ export function CharacterStats() {
 
 				{/* Stats Grid */}
 				<div className="grid grid-cols-1 gap-2 text-sm">
-					<StatItem icon="❤️" label="HP" value={hero?.stats.health ?? 0} />
-					<StatItem icon="⚔️" label="ATK" value={hero?.stats.attack ?? 0} />
-					<StatItem icon="🛡️" label="DEF" value={hero?.stats.defense ?? 0} />
+					<StatItem icon="❤️" label="HP" value={hero?.health ?? 0} />
+					{/* TODO: FIX wrong parameters */}
+					<StatItem icon="⚔️" label="ATK" value={hero?.stats.willpower ?? 0} />
+					<StatItem icon="🛡️" label="DEF" value={hero?.stats.luck ?? 0} />
 					<StatItem icon="⚡" label="SPD" value={hero?.stats.speed ?? 0} />
 					<StatItem icon="💪" label="STR" value={hero?.stats.strength ?? 0} />
 					<StatItem icon="🎯" label="DEX" value={hero?.stats.dexterity ?? 0} />

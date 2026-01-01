@@ -5,6 +5,7 @@ export const StatsSchema = Schema.Struct({
 	dexterity: Schema.Number,
 	intelligence: Schema.Number,
 	willpower: Schema.Number,
+	speed: Schema.Number,
 	luck: Schema.Number,
 });
 
@@ -15,6 +16,7 @@ export class Stats implements _Stats {
 	dexterity: number;
 	intelligence: number;
 	willpower: number;
+	speed: number;
 	luck: number;
 
 	constructor() {
@@ -23,5 +25,6 @@ export class Stats implements _Stats {
 		this.intelligence = 1;
 		this.willpower = 1;
 		this.luck = 1;
+		this.speed = 1;
 	}
 }

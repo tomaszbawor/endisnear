@@ -44,7 +44,7 @@ export default function HeroCreationPage() {
 		const playerData = createPlayerData(
 			heroName,
 			selectedClass,
-			HERO_CLASSES[selectedClass].baseStats,
+			HERO_CLASSES[selectedClass],
 		);
 
 		// Save to the selected slot
@@ -155,19 +155,19 @@ export default function HeroCreationPage() {
 													<div className="flex justify-between">
 														<span className="text-muted-foreground">HP</span>
 														<span className="font-medium">
-															{classInfo.baseStats.health}
+															{classInfo.health}
 														</span>
 													</div>
 													<div className="flex justify-between">
-														<span className="text-muted-foreground">ATK</span>
+														<span className="text-muted-foreground">STR</span>
 														<span className="font-medium">
-															{classInfo.baseStats.attack}
+															{classInfo.baseStats.strength}
 														</span>
 													</div>
 													<div className="flex justify-between">
-														<span className="text-muted-foreground">DEF</span>
+														<span className="text-muted-foreground">INT</span>
 														<span className="font-medium">
-															{classInfo.baseStats.defense}
+															{classInfo.baseStats.intelligence}
 														</span>
 													</div>
 												</div>

@@ -107,10 +107,6 @@ export default function GameLoopPage() {
 		// The BattleView handles the 5-second death screen
 		setCurrentPlayer({
 			...currentPlayer,
-			stats: {
-				...currentPlayer.stats,
-				currentHealth: currentPlayer.stats.health,
-			},
 		});
 	};
 

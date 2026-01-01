@@ -16,6 +16,7 @@ class TestPlayer extends Entity {
 		intelligence: 5,
 		willpower: 5,
 		luck: 5,
+		speed: 1,
 	};
 	combatStats: CombatStats = {
 		health: 100,

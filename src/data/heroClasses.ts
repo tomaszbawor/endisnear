@@ -1,22 +1,11 @@
 import type { LucideIcon } from "lucide-react";
 import { Sword, Wand2, Zap } from "lucide-react";
+import type { Stats } from "@/engine/stats";
 
 /**
  * Available hero classes
  */
 export type HeroClass = "warrior" | "mage" | "rogue";
-
-/**
- * Base stats for each attribute
- */
-export interface BaseStats {
-	strength: number;
-	dexterity: number;
-	intelligence: number;
-	health: number;
-	attack: number;
-	defense: number;
-}
 
 /**
  * Class information including base stats and description
@@ -25,7 +14,8 @@ export interface ClassInfo {
 	name: string;
 	description: string;
 	icon: LucideIcon;
-	baseStats: BaseStats;
+	health: number;
+	baseStats: Stats;
 }
 
 /**
@@ -40,10 +30,11 @@ export const HERO_CLASSES: Record<HeroClass, ClassInfo> = {
 			strength: 8,
 			dexterity: 4,
 			intelligence: 3,
-			health: 120,
-			attack: 12,
-			defense: 8,
+			willpower: 1,
+			speed: 1,
+			luck: 1,
 		},
+		health: 100,
 	},
 	mage: {
 		name: "Mage",
@@ -53,22 +44,24 @@ export const HERO_CLASSES: Record<HeroClass, ClassInfo> = {
 			strength: 3,
 			dexterity: 4,
 			intelligence: 8,
-			health: 80,
-			attack: 15,
-			defense: 4,
+			willpower: 2,
+			speed: 2,
+			luck: 2,
 		},
+		health: 80,
 	},
 	rogue: {
 		name: "Rogue",
 		description: "Swift and cunning, experts in stealth and precision",
 		icon: Zap,
+		health: 100,
 		baseStats: {
 			strength: 4,
 			dexterity: 8,
 			intelligence: 3,
-			health: 100,
-			attack: 10,
-			defense: 6,
+			willpower: 1,
+			speed: 1,
+			luck: 4,
 		},
 	},
 };
@@ -90,6 +83,6 @@ export function getClassName(heroClass: HeroClass): string {
 /**
  * Get base stats for a class
  */
-export function getClassBaseStats(heroClass: HeroClass): BaseStats {
+export function getClassBaseStats(heroClass: HeroClass): Stats {
 	return { ...HERO_CLASSES[heroClass].baseStats };
 }

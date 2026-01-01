@@ -14,6 +14,7 @@ class DemoPlayer extends Entity {
 		intelligence: 4,
 		willpower: 5,
 		luck: 3,
+		speed: 1,
 	};
 	combatStats: CombatStats = {
 		health: 100,

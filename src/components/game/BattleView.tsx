@@ -30,19 +30,13 @@ class Hero extends Entity {
 	constructor(playerData: PlayerData) {
 		super();
 		this.name = playerData.name;
-		this.stats = {
-			strength: playerData.stats.strength,
-			dexterity: playerData.stats.dexterity,
-			intelligence: playerData.stats.intelligence,
-			// TODO: FIIIIIX THIS
-			willpower: 3,
-			luck: 4,
-		};
+		this.stats = playerData.stats;
+
 		this.combatStats = {
-			health: playerData.stats.currentHealth,
-			maxHealth: playerData.stats.health,
-			attack: playerData.stats.attack,
-			defense: playerData.stats.defense,
+			health: playerData.currentHealth,
+			maxHealth: playerData.health,
+			attack: playerData.stats.strength, // TODO: FIX
+			defense: playerData.stats.willpower, // TODO: FIX
 			speed: playerData.stats.speed,
 		};
 	}
@@ -58,6 +52,7 @@ function convertToMonsterTemplate(monster: MonsterData): MonsterTemplate {
 			dexterity: Math.floor(monster.stats.speed / 2),
 			intelligence: 5,
 			willpower: 5,
+			speed: monster.stats.speed,
 			luck: 3,
 		},
 		baseHealth: monster.stats.health,

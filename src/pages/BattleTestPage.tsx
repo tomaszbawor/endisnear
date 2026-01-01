@@ -38,6 +38,7 @@ class Hero extends Entity {
 		intelligence: 5,
 		willpower: 6,
 		luck: 4,
+		speed: 2,
 	};
 	combatStats: CombatStats = {
 		health: 120,

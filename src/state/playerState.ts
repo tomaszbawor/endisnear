@@ -1,6 +1,6 @@
 import { Atom } from "@effect-atom/atom";
 import { Schema } from "effect";
-import type { HeroClass } from "@/data/heroClasses";
+import type { ClassInfo, HeroClass } from "@/data/heroClasses";
 import { type PlayerData, PlayerDataSchema } from "@/engine/player/Player";
 import { atomRuntime } from "./atomRuntime";
 
@@ -20,25 +20,19 @@ export const currentPlayerAtom = Atom.kvs({
 export function createPlayerData(
 	name: string,
 	heroClass: HeroClass,
-	baseStats: {
-		strength: number;
-		dexterity: number;
-		intelligence: number;
-		health: number;
-		attack: number;
-		defense: number;
-	},
+	classInfo: ClassInfo,
 ): PlayerData {
 	return {
 		name,
 		class: heroClass,
 		level: 1,
 		currentExp: 0,
+		health: classInfo.health,
+		currentHealth: classInfo.health,
+
 		expToNextLevel: 100,
 		stats: {
-			...baseStats,
-			currentHealth: baseStats.health,
-			speed: 10,
+			...classInfo.baseStats,
 		},
 		gold: 100,
 		location: "Starting Village",
