@@ -1,4 +1,16 @@
-export class Stats {
+import { Schema } from "effect";
+
+export const StatsSchema = Schema.Struct({
+	strength: Schema.Number,
+	dexterity: Schema.Number,
+	intelligence: Schema.Number,
+	willpower: Schema.Number,
+	luck: Schema.Number,
+});
+
+type _Stats = typeof StatsSchema.Type;
+
+export class Stats implements _Stats {
 	strength: number;
 	dexterity: number;
 	intelligence: number;
