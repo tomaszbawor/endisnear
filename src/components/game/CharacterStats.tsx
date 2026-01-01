@@ -22,8 +22,10 @@ export function CharacterStats() {
 			<CardContent className="space-y-3">
 				{/* Level & EXP */}
 				<div>
-					<div className="flex justify-between text-sm mb-1">
-						<span className="font-semibold">Level {hero?.level}</span>
+					<div className="grid grid-cols-1 text-sm mb-1">
+						<span className="text-sm font-semibold justify-center">
+							Level {hero?.level}
+						</span>
 						<span className="text-muted-foreground">
 							{hero?.currentExp} / {hero?.expToNextLevel} EXP
 						</span>
@@ -32,14 +34,18 @@ export function CharacterStats() {
 				</div>
 
 				{/* Stats Grid */}
-				<div className="grid grid-cols-2 gap-2 text-sm">
+				<div className="grid grid-cols-1 gap-2 text-sm">
+					<StatItem icon="❤️" label="HP" value={hero?.stats.health ?? 0} />
 					<StatItem icon="⚔️" label="ATK" value={hero?.stats.attack ?? 0} />
 					<StatItem icon="🛡️" label="DEF" value={hero?.stats.defense ?? 0} />
-					<StatItem icon="❤️" label="HP" value={hero?.stats.health ?? 0} />
 					<StatItem icon="⚡" label="SPD" value={hero?.stats.speed ?? 0} />
 					<StatItem icon="💪" label="STR" value={hero?.stats.strength ?? 0} />
 					<StatItem icon="🎯" label="DEX" value={hero?.stats.dexterity ?? 0} />
-					<StatItem icon="🧠" label="INT" value={hero?.stats.dexterity ?? 0} />
+					<StatItem
+						icon="🧠"
+						label="INT"
+						value={hero?.stats.intelligence ?? 0}
+					/>
 				</div>
 			</CardContent>
 		</Card>
