@@ -73,6 +73,7 @@ export function createPlayerData(
 		level: 1,
 		items: {},
 		currentExp: 0,
+		freeStatPoints: 0,
 		health: classInfo.health,
 		currentHealth: classInfo.health,
 

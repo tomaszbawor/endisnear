@@ -15,38 +15,6 @@ import {
 import { currentPlayerAtom, equippedItemsAtom } from "@/state/playerState";
 import { GameLoopSubview } from "./gameloop/GameLoopSubview";
 
-// /**
-//  * Calculate total stats from equipped items
-//  */
-// function calculateTotalStats(equipment: Record<string, Item | undefined>) {
-// 	const baseStats = {
-// 		attack: 10,
-// 		defense: 5,
-// 		health: 100,
-// 		speed: 10,
-// 		strength: 5,
-// 		dexterity: 5,
-// 		intelligence: 5,
-// 	};
-//
-// 	const totalStats = { ...baseStats };
-//
-// 	for (const item of Object.values(equipment)) {
-// 		if (!item) continue;
-// 		if (item.stats.attack) totalStats.attack += item.stats.attack;
-// 		if (item.stats.defense) totalStats.defense += item.stats.defense;
-// 		if (item.stats.health) totalStats.health += item.stats.health;
-// 		if (item.stats.speed) totalStats.speed += item.stats.speed;
-// 		if (item.stats.strength) totalStats.strength += item.stats.strength;
-// 		if (item.stats.dexterity) totalStats.dexterity += item.stats.dexterity;
-// 		if (item.stats.intelligence)
-// 			totalStats.intelligence += item.stats.intelligence;
-// 	}
-//
-// 	return { baseStats, totalStats };
-// }
-//
-
 export default function GameLoopPage() {
 	const currentView = useAtomValue(currentViewAtom);
 	const equippedItems = useAtomValue(equippedItemsAtom);
@@ -121,18 +89,22 @@ export default function GameLoopPage() {
 		const newExp = currentPlayer.currentExp + exp;
 		let newLevel = currentPlayer.level;
 		let expToNext = currentPlayer.expToNextLevel;
+		let statPoint = currentPlayer.freeStatPoints;
 
 		// Level up if enough exp
 		if (newExp >= expToNext) {
 			newLevel += 1;
+			statPoint += 5;
 			expToNext = Math.floor(expToNext * 1.5);
 		}
 
 		setCurrentPlayer({
 			...currentPlayer,
 			level: newLevel,
+
 			currentExp: newExp >= currentPlayer.expToNextLevel ? 0 : newExp,
 			expToNextLevel: expToNext,
+			freeStatPoints: statPoint,
 		});
 	};
 
@@ -188,8 +160,6 @@ export default function GameLoopPage() {
 		// Remove from equipment
 		const newEquipment = { ...equippedItems, [slot]: undefined };
 		setEquippedItems(newEquipment);
-
-		// TODO: Implement stat recalculation
 	};
 
 	// Todo: remove to some global management class

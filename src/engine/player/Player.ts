@@ -8,6 +8,7 @@ export const PlayerDataSchema = Schema.Struct({
 	name: Schema.String,
 	class: PlayerClassSchema,
 	level: Schema.Number,
+	freeStatPoints: Schema.Number,
 	currentExp: Schema.Number,
 	expToNextLevel: Schema.Number,
 	health: Schema.Number,
