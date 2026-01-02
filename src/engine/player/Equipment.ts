@@ -9,7 +9,7 @@ const ItemStatsSchema = Schema.extend(
 	StatsSchema,
 	Schema.Struct({
 		attack: Schema.optional(Schema.Number),
-		defense: Schema.optional(Schema.Number),
+		defence: Schema.optional(Schema.Number),
 		health: Schema.optional(Schema.Number),
 	}),
 ).pipe(Schema.partial);

@@ -44,7 +44,7 @@ export const ITEMS: Record<string, Item> = {
 		type: "ARMOR",
 		rarity: "COMMON",
 		slot: "OFFHAND",
-		stats: { defense: 5 },
+		stats: { defence: 5 },
 		price: 30,
 	},
 
@@ -56,7 +56,7 @@ export const ITEMS: Record<string, Item> = {
 		type: "ARMOR",
 		rarity: "COMMON",
 		slot: "HEAD",
-		stats: { defense: 3 },
+		stats: { defence: 3 },
 		price: 40,
 	},
 	STEEL_HELMET: {
@@ -66,7 +66,7 @@ export const ITEMS: Record<string, Item> = {
 		type: "ARMOR",
 		rarity: "RARE",
 		slot: "HEAD",
-		stats: { defense: 15, health: 20 },
+		stats: { defence: 15, health: 20 },
 		price: 300,
 	},
 
@@ -78,7 +78,7 @@ export const ITEMS: Record<string, Item> = {
 		type: "ARMOR",
 		rarity: "COMMON",
 		slot: "TORSO",
-		stats: { defense: 5, intelligence: 5 },
+		stats: { defence: 5, intelligence: 5 },
 		price: 60,
 	},
 	CHAINMAIL: {
@@ -88,7 +88,7 @@ export const ITEMS: Record<string, Item> = {
 		type: "ARMOR",
 		rarity: "UNCOMMON",
 		slot: "TORSO",
-		stats: { defense: 12, health: 15 },
+		stats: { defence: 12, health: 15 },
 		price: 200,
 	},
 
@@ -100,7 +100,7 @@ export const ITEMS: Record<string, Item> = {
 		type: "ARMOR",
 		rarity: "COMMON",
 		slot: "LEGS",
-		stats: { defense: 4, speed: 2 },
+		stats: { defence: 4, speed: 2 },
 		price: 45,
 	},
 
@@ -122,7 +122,7 @@ export const ITEMS: Record<string, Item> = {
 		type: "ACCESSORY",
 		rarity: "RARE",
 		slot: "NECKLACE",
-		stats: { health: 25, defense: 5 },
+		stats: { health: 25, defence: 5 },
 		price: 250,
 	},
 	AMULET_OF_POWER: {

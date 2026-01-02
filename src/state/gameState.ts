@@ -1,10 +1,5 @@
 import { Atom } from "@effect-atom/atom-react";
-import type {
-	EquippedItems,
-	InventorySlot,
-	Item,
-	PlayerStats,
-} from "@/engine/player/Equipment";
+import type { InventorySlot, Item } from "@/engine/player/Equipment";
 
 /**
  * Inventory atom - 20 slot inventory grid
@@ -38,29 +33,3 @@ export const shopItemsAtom = Atom.make<Item[]>([]);
  * Last shop rotation timestamp
  */
 export const lastShopRotationAtom = Atom.make<number>(Date.now());
-
-/**
- * Helper: Calculate total stats from base stats + equipment bonuses
- */
-export function calculateTotalStats(
-	baseStats: PlayerStats["baseStats"],
-	equipment: EquippedItems,
-): PlayerStats["totalStats"] {
-	const total = { ...baseStats };
-
-	// Add bonuses from each equipped item
-	for (const item of Object.values(equipment)) {
-		if (item?.stats) {
-			total.attack = (total.attack ?? 0) + (item.stats.attack ?? 0);
-			total.defense = (total.defense ?? 0) + (item.stats.defense ?? 0);
-			total.health = (total.health ?? 0) + (item.stats.health ?? 0);
-			total.speed = (total.speed ?? 0) + (item.stats.speed ?? 0);
-			total.strength = (total.strength ?? 0) + (item.stats.strength ?? 0);
-			total.dexterity = (total.dexterity ?? 0) + (item.stats.dexterity ?? 0);
-			total.intelligence =
-				(total.intelligence ?? 0) + (item.stats.intelligence ?? 0);
-		}
-	}
-
-	return total;
-}

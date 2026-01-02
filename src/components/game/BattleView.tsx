@@ -39,7 +39,7 @@ class HeroBattleInstance extends Entity {
 			health: effectiveStats.health ?? playerData.health,
 			maxHealth: effectiveStats.health ?? playerData.health,
 			attack: effectiveStats.attack ?? playerData.stats.strength,
-			defense: effectiveStats.defense ?? playerData.stats.willpower, // TODO: Is it really willpower??
+			defense: effectiveStats.defence ?? playerData.stats.willpower, // TODO: Is it really willpower??
 			speed: effectiveStats.speed ?? playerData.stats.speed,
 		};
 	}

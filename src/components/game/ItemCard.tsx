@@ -54,8 +54,8 @@ export function ItemCard({
 					{item.stats.attack && (
 						<span className="text-red-400">⚔️ {item.stats.attack}</span>
 					)}
-					{item.stats.defense && (
-						<span className="text-blue-400">🛡️ {item.stats.defense}</span>
+					{item.stats.defence && (
+						<span className="text-blue-400">🛡️ {item.stats.defence}</span>
 					)}
 					{item.stats.health && (
 						<span className="text-green-400">❤️ {item.stats.health}</span>

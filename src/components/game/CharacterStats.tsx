@@ -1,7 +1,7 @@
 import { Atom, useAtomValue } from "@effect-atom/atom-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { currentPlayerAtom } from "@/state/playerState";
+import { currentPlayerAtom, statsWithInventoryAtom } from "@/state/playerState";
 
 const expPercentageAtom = Atom.make((get) => {
 	const hero = get(currentPlayerAtom);
@@ -13,6 +13,7 @@ const expPercentageAtom = Atom.make((get) => {
 export function CharacterStats() {
 	const expPercentage = useAtomValue(expPercentageAtom);
 	const hero = useAtomValue(currentPlayerAtom);
+	const effectiveStats = useAtomValue(statsWithInventoryAtom);
 
 	return (
 		<Card>
@@ -35,17 +36,53 @@ export function CharacterStats() {
 
 				{/* Stats Grid */}
 				<div className="grid grid-cols-1 gap-2 text-sm">
-					<StatItem icon="❤️" label="HP" value={hero?.health ?? 0} />
+					<StatItem
+						icon="❤️"
+						label="HP"
+						value={effectiveStats?.health ?? 0}
+						baseValue={hero?.health}
+					/>
 					{/* TODO: FIX wrong parameters */}
-					<StatItem icon="⚔️" label="ATK" value={hero?.stats.willpower ?? 0} />
-					<StatItem icon="🛡️" label="DEF" value={hero?.stats.luck ?? 0} />
-					<StatItem icon="⚡" label="SPD" value={hero?.stats.speed ?? 0} />
-					<StatItem icon="💪" label="STR" value={hero?.stats.strength ?? 0} />
-					<StatItem icon="🎯" label="DEX" value={hero?.stats.dexterity ?? 0} />
+					<StatItem icon="⚔️" label="ATK" value={effectiveStats?.attack ?? 0} />
+					<StatItem icon="🛡️" label="DEF" value={effectiveStats?.defence ?? 1} />
+					<StatItem
+						icon="⚡"
+						label="SPD"
+						value={effectiveStats?.speed ?? 0}
+						baseValue={hero?.stats.speed}
+					/>
+					<StatItem
+						icon="💪"
+						label="STR"
+						value={effectiveStats?.strength ?? 0}
+						baseValue={hero?.stats.strength}
+					/>
+
 					<StatItem
 						icon="🧠"
+						label="WIL"
+						value={effectiveStats?.willpower ?? 0}
+						baseValue={hero?.stats.willpower}
+					/>
+
+					<StatItem
+						icon="🎯"
+						label="DEX"
+						value={effectiveStats?.dexterity ?? 0}
+						baseValue={hero?.stats.dexterity}
+					/>
+					<StatItem
+						icon="📖"
 						label="INT"
-						value={hero?.stats.intelligence ?? 0}
+						value={effectiveStats?.intelligence ?? 0}
+						baseValue={hero?.stats.intelligence}
+					/>
+
+					<StatItem
+						icon="🍀"
+						label="LCK"
+						value={effectiveStats?.luck ?? 0}
+						baseValue={hero?.stats.luck}
 					/>
 				</div>
 			</CardContent>
@@ -57,16 +94,24 @@ function StatItem({
 	icon,
 	label,
 	value,
+	baseValue,
 }: {
 	icon: string;
 	label: string;
 	value: number;
+	baseValue?: number;
 }) {
+	const shouldDisplayBaseStats: boolean =
+		baseValue !== undefined && baseValue !== value;
+
 	return (
 		<div className="flex items-center gap-1">
 			<span>{icon}</span>
 			<span className="text-muted-foreground">{label}:</span>
 			<span className="font-semibold">{value}</span>
+			{shouldDisplayBaseStats && (
+				<span className="font-extralight text-xs">({baseValue ?? value})</span>
+			)}
 		</div>
 	);
 }

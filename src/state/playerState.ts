@@ -45,7 +45,7 @@ export const statsWithInventoryAtom = Atom.make((get) => {
 	for (const item of Object.values(player.items)) {
 		if (!item) continue;
 		totalStats.attack += item.stats.attack ?? 0;
-		totalStats.defence += item.stats.defense ?? 0;
+		totalStats.defence += item.stats.defence ?? 0;
 		totalStats.health += item.stats.health ?? 0;
 
 		totalStats.dexterity += item.stats.dexterity ?? 0;
