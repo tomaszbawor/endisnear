@@ -7,19 +7,6 @@ import type {
 } from "@/engine/player/Equipment";
 
 /**
- * Equipped items atom - current equipment in each slot
- */
-export const equippedItemsAtom = Atom.make<EquippedItems>({
-	HEAD: undefined,
-	TORSO: undefined,
-	LEGS: undefined,
-	MAINHAND: undefined,
-	OFFHAND: undefined,
-	RING: undefined,
-	NECKLACE: undefined,
-});
-
-/**
  * Inventory atom - 20 slot inventory grid
  */
 export const inventoryAtom = Atom.make<InventorySlot[]>(

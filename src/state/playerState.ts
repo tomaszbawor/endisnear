@@ -1,6 +1,7 @@
 import { Atom } from "@effect-atom/atom";
 import { Schema } from "effect";
 import type { ClassInfo, HeroClass } from "@/data/heroClasses";
+import type { EquippedItems } from "@/engine/player/Equipment";
 import { type PlayerData, PlayerDataSchema } from "@/engine/player/Player";
 import { atomRuntime } from "./atomRuntime";
 
@@ -14,6 +15,21 @@ export const currentPlayerAtom = Atom.kvs({
 	defaultValue: () => null,
 });
 
+export const equippedItemsAtom = Atom.writable(
+	(get) => {
+		const p = get(currentPlayerAtom);
+		if (!p) return {};
+		return p.items;
+	},
+	(ctx, newItems: EquippedItems) => {
+		const player = ctx.get(currentPlayerAtom);
+		if (player) {
+			const updatedPlayer = { ...player, items: newItems };
+			ctx.set(currentPlayerAtom, { ...updatedPlayer });
+		}
+	},
+);
+
 /**
  * Create initial player data from hero creation
  */
@@ -26,6 +42,7 @@ export function createPlayerData(
 		name,
 		class: heroClass,
 		level: 1,
+		items: {},
 		currentExp: 0,
 		health: classInfo.health,
 		currentHealth: classInfo.health,

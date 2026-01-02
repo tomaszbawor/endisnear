@@ -59,7 +59,7 @@ const ItemSchema = Schema.Struct({
 
 export type Item = typeof ItemSchema.Type;
 
-const EquippedItemsSchema = Schema.Record({
+export const EquippedItemsSchema = Schema.Record({
 	key: EquipmentSlotSchema,
 	value: ItemSchema,
 }).pipe(Schema.partial);

@@ -7,13 +7,12 @@ import { generateShopItems } from "@/data/items";
 import type { EquipmentSlot, Item } from "@/engine/player/Equipment";
 import {
 	currentViewAtom,
-	equippedItemsAtom,
 	goldAtom,
 	inventoryAtom,
 	lastShopRotationAtom,
 	shopItemsAtom,
 } from "@/state/gameState";
-import { currentPlayerAtom } from "@/state/playerState";
+import { currentPlayerAtom, equippedItemsAtom } from "@/state/playerState";
 import { GameLoopSubview } from "./gameloop/GameLoopSubview";
 
 // /**
@@ -46,6 +45,7 @@ import { GameLoopSubview } from "./gameloop/GameLoopSubview";
 //
 // 	return { baseStats, totalStats };
 // }
+//
 
 export default function GameLoopPage() {
 	const currentView = useAtomValue(currentViewAtom);

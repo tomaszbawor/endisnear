@@ -178,37 +178,6 @@ export default function HeroCreationPage() {
 							</div>
 						</CardContent>
 					</Card>
-
-					{/* Character Summary */}
-					{canStart && (
-						<Card className="border-amber-300/50 bg-accent/5">
-							<CardHeader>
-								<CardTitle>Hero Summary</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<div className="space-y-2">
-									<div className="flex justify-between text-sm">
-										<span className="text-muted-foreground">Name:</span>
-										<span className="font-medium">{heroName}</span>
-									</div>
-									<div className="flex justify-between text-sm">
-										<span className="text-muted-foreground">Class:</span>
-										<span className="font-medium">
-											{selectedClass && HERO_CLASSES[selectedClass].name}
-										</span>
-									</div>
-									<div className="flex justify-between text-sm">
-										<span className="text-muted-foreground">Save Slot:</span>
-										<span className="font-medium">
-											{slotId
-												? `Slot ${Number.parseInt(slotId, 10) + 1}`
-												: "N/A"}
-										</span>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-					)}
 				</div>
 
 				{/* Action Buttons */}
