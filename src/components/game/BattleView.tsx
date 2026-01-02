@@ -10,6 +10,7 @@ import { BattleSystem } from "@/engine/battle-system";
 import type { CombatStats } from "@/engine/entity";
 import { Entity } from "@/engine/entity";
 import { Monster, type MonsterTemplate } from "@/engine/monster";
+import type { ItemStats } from "@/engine/player/Equipment";
 import type { PlayerData } from "@/engine/player/Player";
 import type { Stats } from "@/engine/stats";
 import {
@@ -19,25 +20,27 @@ import {
 	deathStateAtom,
 	logIdCounterAtom,
 } from "@/state/battleAtoms";
+import { statsWithInventoryAtom } from "@/state/playerState";
 import { formatBattleEvent } from "@/utils/battleEventFormatter";
+import { DebugStuff } from "../Debug";
 
 // Hero class that uses player data
-class Hero extends Entity {
+class HeroBattleInstance extends Entity {
 	name: string;
 	stats: Stats;
 	combatStats: CombatStats;
-
-	constructor(playerData: PlayerData) {
+	// TODO: Replace that type with non optional ones
+	constructor(playerData: PlayerData, effectiveStats: ItemStats) {
 		super();
 		this.name = playerData.name;
 		this.stats = playerData.stats;
 
 		this.combatStats = {
-			health: playerData.currentHealth,
-			maxHealth: playerData.health,
-			attack: playerData.stats.strength, // TODO: FIX
-			defense: playerData.stats.willpower, // TODO: FIX
-			speed: playerData.stats.speed,
+			health: effectiveStats.health ?? playerData.health,
+			maxHealth: effectiveStats.health ?? playerData.health,
+			attack: effectiveStats.attack ?? playerData.stats.strength,
+			defense: effectiveStats.defense ?? playerData.stats.willpower, // TODO: Is it really willpower??
+			speed: effectiveStats.speed ?? playerData.stats.speed,
 		};
 	}
 }
@@ -95,6 +98,8 @@ export function BattleView({
 	const onPlayerDeathRef = React.useRef(onPlayerDeath);
 	const onMonsterDefeatedRef = React.useRef(onMonsterDefeated);
 
+	const statsWithInventory = useAtomValue(statsWithInventoryAtom);
+
 	// Get random monster from current location
 	const getRandomMonster = React.useCallback((): MonsterData | null => {
 		const location = getLocationById(currentPlayer.location);
@@ -114,7 +119,9 @@ export function BattleView({
 		}
 
 		const newBattleId = (battleState?.battleId ?? 0) + 1;
-		const newHero = new Hero(currentPlayer);
+		const newHero = new HeroBattleInstance(currentPlayer, {
+			...statsWithInventory,
+		});
 		const monsterTemplate = convertToMonsterTemplate(monsterData);
 		const newMonster = new Monster(monsterTemplate);
 
@@ -149,6 +156,7 @@ export function BattleView({
 		getRandomMonster,
 		setBattleEntities,
 		setBattleState,
+		statsWithInventory,
 	]);
 
 	const startNewBattleRef = React.useRef(startNewBattle);
@@ -330,6 +338,7 @@ export function BattleView({
 							: undefined
 					}
 				/>
+				<DebugStuff object={statsWithInventory} />
 			</div>
 
 			{/* Battle Log */}

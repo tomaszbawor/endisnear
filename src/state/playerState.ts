@@ -1,7 +1,7 @@
 import { Atom } from "@effect-atom/atom";
 import { Schema } from "effect";
 import type { ClassInfo, HeroClass } from "@/data/heroClasses";
-import type { EquippedItems } from "@/engine/player/Equipment";
+import type { EquippedItems, ItemStats } from "@/engine/player/Equipment";
 import { type PlayerData, PlayerDataSchema } from "@/engine/player/Player";
 import { atomRuntime } from "./atomRuntime";
 
@@ -29,6 +29,34 @@ export const equippedItemsAtom = Atom.writable(
 		}
 	},
 );
+
+export const statsWithInventoryAtom = Atom.make((get) => {
+	const player = get(currentPlayerAtom);
+
+	if (!player) return null;
+
+	const totalStats = {
+		...player.stats,
+		attack: 1,
+		defence: 1,
+		health: player.health,
+	};
+
+	for (const item of Object.values(player.items)) {
+		totalStats.attack += item.stats.attack ?? 0;
+		totalStats.defence += item.stats.defense ?? 0;
+		totalStats.health += item.stats.health ?? 0;
+
+		totalStats.dexterity += item.stats.dexterity ?? 0;
+		totalStats.strength += item.stats.strength ?? 0;
+		totalStats.willpower += item.stats.willpower ?? 0;
+		totalStats.speed += item.stats.speed ?? 0;
+		totalStats.intelligence += item.stats.intelligence ?? 0;
+		totalStats.luck += item.stats.luck ?? 0;
+	}
+
+	return totalStats as ItemStats;
+});
 
 /**
  * Create initial player data from hero creation

@@ -3,16 +3,16 @@
  */
 
 import { Schema } from "effect";
+import { StatsSchema } from "../stats";
 
-const ItemStatsSchema = Schema.Struct({
-	attack: Schema.optional(Schema.Number),
-	defense: Schema.optional(Schema.Number),
-	health: Schema.optional(Schema.Number),
-	speed: Schema.optional(Schema.Number),
-	strength: Schema.optional(Schema.Number),
-	dexterity: Schema.optional(Schema.Number),
-	intelligence: Schema.optional(Schema.Number),
-});
+const ItemStatsSchema = Schema.extend(
+	StatsSchema,
+	Schema.Struct({
+		attack: Schema.optional(Schema.Number),
+		defense: Schema.optional(Schema.Number),
+		health: Schema.optional(Schema.Number),
+	}),
+).pipe(Schema.partial);
 
 export type ItemStats = typeof ItemStatsSchema.Type;
 
