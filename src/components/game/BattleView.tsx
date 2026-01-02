@@ -22,7 +22,6 @@ import {
 } from "@/state/battleAtoms";
 import { statsWithInventoryAtom } from "@/state/playerState";
 import { formatBattleEvent } from "@/utils/battleEventFormatter";
-import { DebugStuff } from "../Debug";
 
 // Hero class that uses player data
 class HeroBattleInstance extends Entity {
@@ -338,7 +337,6 @@ export function BattleView({
 							: undefined
 					}
 				/>
-				<DebugStuff object={statsWithInventory} />
 			</div>
 
 			{/* Battle Log */}
