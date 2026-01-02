@@ -34,12 +34,13 @@ export const HERO_CLASSES: Record<HeroClass, ClassInfo> = {
 			speed: 1,
 			luck: 1,
 		},
-		health: 100,
+		health: 120,
 	},
 	mage: {
 		name: "Mage",
 		description: "Wielders of arcane power and mystical knowledge",
 		icon: Wand2,
+		health: 80,
 		baseStats: {
 			strength: 3,
 			dexterity: 4,
@@ -48,7 +49,6 @@ export const HERO_CLASSES: Record<HeroClass, ClassInfo> = {
 			speed: 2,
 			luck: 2,
 		},
-		health: 80,
 	},
 	rogue: {
 		name: "Rogue",

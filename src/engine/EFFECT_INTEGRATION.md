@@ -5,12 +5,14 @@ This document describes how the battle system integrates with Effect.ts for func
 ## Overview
 
 The battle system now has two implementations:
+
 1. **Promise-based** (`BattleSystem`) - Uses standard JavaScript Promises and ReadableStream
 2. **Effect-based** (`BattleSystemEffect`) - Uses Effect.ts for functional error handling and concurrency
 
 ## Why Effect.ts?
 
 Effect.ts provides:
+
 - **Type-safe error handling** - Errors are part of the type signature
 - **Resource management** - Automatic cleanup via Effect's resource system
 - **Concurrency** - Built-in support for concurrent and parallel operations
@@ -25,13 +27,14 @@ Type-safe error types using Effect's `Data.TaggedError`:
 
 ```typescript
 class InvalidActionError extends Data.TaggedError("InvalidActionError")<{
-	action: string;
-	currentState: string;
-	message: string;
+  action: string;
+  currentState: string;
+  message: string;
 }> {}
 ```
 
 **Error Types:**
+
 - `BattleNotStartedError` - Battle hasn't been initialized
 - `InvalidActionError` - Invalid action for current state
 - `EntityDeadError` - Entity is already dead
@@ -40,19 +43,25 @@ class InvalidActionError extends Data.TaggedError("InvalidActionError")<{
 ### 2. BattleFSMEffect (`battle-fsm-effect.ts`)
 
 Effect-based Finite State Machine using:
+
 - **`Ref.Ref`** - Mutable references for battle context
 - **`Queue.Queue`** - Event queue for streaming
 - **`Effect.Effect`** - All operations return Effects
 - **`Stream.Stream`** - Event streaming
 
 **Key Methods:**
+
 ```typescript
 class BattleFSMEffect {
-	static make(player: Entity, enemy: Entity, expReward: number): Effect.Effect<BattleFSMEffect>
-	getState(): Effect.Effect<BattleState>
-	initialize(): Effect.Effect<void>
-	executeAction(action: BattleAction): Effect.Effect<void, InvalidActionError>
-	getEventStream(): Stream.Stream<BattleEvent>
+  static make(
+    player: Entity,
+    enemy: Entity,
+    expReward: number,
+  ): Effect.Effect<BattleFSMEffect>;
+  getState(): Effect.Effect<BattleState>;
+  initialize(): Effect.Effect<void>;
+  executeAction(action: BattleAction): Effect.Effect<void, InvalidActionError>;
+  getEventStream(): Stream.Stream<BattleEvent>;
 }
 ```
 
@@ -62,10 +71,16 @@ High-level API for running battles:
 
 ```typescript
 class BattleSystemEffect {
-	static make(player: Entity, enemy: Monster): Effect.Effect<BattleSystemEffect>
-	static runBattle(player: Entity, enemy: Monster): Effect.Effect<BattleResultEffect>
-	runAutoBattle(): Effect.Effect<BattleResultEffect>
-	getEventStream(): Stream.Stream<BattleEvent>
+  static make(
+    player: Entity,
+    enemy: Monster,
+  ): Effect.Effect<BattleSystemEffect>;
+  static runBattle(
+    player: Entity,
+    enemy: Monster,
+  ): Effect.Effect<BattleResultEffect>;
+  runAutoBattle(): Effect.Effect<BattleResultEffect>;
+  getEventStream(): Stream.Stream<BattleEvent>;
 }
 ```
 
@@ -78,16 +93,16 @@ import { Effect } from "effect";
 import { BattleSystemEffect, Monster, MONSTER_TEMPLATES } from "./engine";
 
 const runBattle = Effect.gen(function* () {
-	const player = createPlayer();
-	const enemy = new Monster(MONSTER_TEMPLATES.GOBLIN);
+  const player = createPlayer();
+  const enemy = new Monster(MONSTER_TEMPLATES.GOBLIN);
 
-	const result = yield* BattleSystemEffect.runBattle(player, enemy);
+  const result = yield* BattleSystemEffect.runBattle(player, enemy);
 
-	console.log(`Victory: ${result.victory}`);
-	console.log(`EXP Gained: ${result.expGained}`);
-	console.log(`Turns: ${result.turnCount}`);
+  console.log(`Victory: ${result.victory}`);
+  console.log(`EXP Gained: ${result.expGained}`);
+  console.log(`Turns: ${result.turnCount}`);
 
-	return result;
+  return result;
 });
 
 // Run the Effect
@@ -100,19 +115,19 @@ await Effect.runPromise(runBattle);
 import { Effect, Stream } from "effect";
 
 const battleWithEvents = Effect.gen(function* () {
-	const battle = yield* BattleSystemEffect.make(player, enemy);
-	const eventStream = battle.getEventStream();
+  const battle = yield* BattleSystemEffect.make(player, enemy);
+  const eventStream = battle.getEventStream();
 
-	// Process events in real-time
-	yield* Effect.fork(
-		Stream.runForEach(eventStream, (event) =>
-			Effect.sync(() => {
-				console.log(`Event: ${event.type}`);
-			})
-		)
-	);
+  // Process events in real-time
+  yield* Effect.fork(
+    Stream.runForEach(eventStream, (event) =>
+      Effect.sync(() => {
+        console.log(`Event: ${event.type}`);
+      }),
+    ),
+  );
 
-	return yield* battle.runAutoBattle();
+  return yield* battle.runAutoBattle();
 });
 ```
 
@@ -124,25 +139,25 @@ Effect makes running multiple battles concurrently trivial:
 import { Effect } from "effect";
 
 const runConcurrentBattles = Effect.gen(function* () {
-	const player1 = createPlayer();
-	const player2 = createPlayer();
-	const player3 = createPlayer();
+  const player1 = createPlayer();
+  const player2 = createPlayer();
+  const player3 = createPlayer();
 
-	const enemy1 = new Monster(MONSTER_TEMPLATES.SLIME);
-	const enemy2 = new Monster(MONSTER_TEMPLATES.GOBLIN);
-	const enemy3 = new Monster(MONSTER_TEMPLATES.WOLF);
+  const enemy1 = new Monster(MONSTER_TEMPLATES.SLIME);
+  const enemy2 = new Monster(MONSTER_TEMPLATES.GOBLIN);
+  const enemy3 = new Monster(MONSTER_TEMPLATES.WOLF);
 
-	// Run all battles concurrently
-	const [result1, result2, result3] = yield* Effect.all(
-		[
-			BattleSystemEffect.runBattle(player1, enemy1),
-			BattleSystemEffect.runBattle(player2, enemy2),
-			BattleSystemEffect.runBattle(player3, enemy3),
-		],
-		{ concurrency: "unbounded" }
-	);
+  // Run all battles concurrently
+  const [result1, result2, result3] = yield* Effect.all(
+    [
+      BattleSystemEffect.runBattle(player1, enemy1),
+      BattleSystemEffect.runBattle(player2, enemy2),
+      BattleSystemEffect.runBattle(player3, enemy3),
+    ],
+    { concurrency: "unbounded" },
+  );
 
-	return [result1, result2, result3];
+  return [result1, result2, result3];
 });
 
 await Effect.runPromise(runConcurrentBattles);
@@ -156,22 +171,22 @@ Effect provides type-safe error handling:
 import { Effect } from "effect";
 
 const battleWithErrorHandling = Effect.gen(function* () {
-	const battle = yield* BattleSystemEffect.make(player, enemy);
+  const battle = yield* BattleSystemEffect.make(player, enemy);
 
-	yield* battle.start();
+  yield* battle.start();
 
-	// This returns Effect<void, InvalidActionError>
-	const attackResult = yield* battle.playerAttack();
+  // This returns Effect<void, InvalidActionError>
+  const attackResult = yield* battle.playerAttack();
 
-	return yield* battle.runAutoBattle();
+  return yield* battle.runAutoBattle();
 }).pipe(
-	Effect.catchAll((error) => {
-		if (error._tag === "InvalidActionError") {
-			console.error(`Invalid action: ${error.message}`);
-			return Effect.succeed(null);
-		}
-		return Effect.fail(error);
-	})
+  Effect.catchAll((error) => {
+    if (error._tag === "InvalidActionError") {
+      console.error(`Invalid action: ${error.message}`);
+      return Effect.succeed(null);
+    }
+    return Effect.fail(error);
+  }),
 );
 ```
 
@@ -179,28 +194,28 @@ const battleWithErrorHandling = Effect.gen(function* () {
 
 ```typescript
 const runCampaign = Effect.gen(function* () {
-	const player = createPlayer();
-	const results = [];
+  const player = createPlayer();
+  const results = [];
 
-	for (let i = 1; i <= 5; i++) {
-		const monsterTemplate = getRandomMonster(i);
-		const enemy = new Monster(monsterTemplate);
+  for (let i = 1; i <= 5; i++) {
+    const monsterTemplate = getRandomMonster(i);
+    const enemy = new Monster(monsterTemplate);
 
-		console.log(`Battle ${i}: vs ${enemy.name}`);
+    console.log(`Battle ${i}: vs ${enemy.name}`);
 
-		const result = yield* BattleSystemEffect.runBattle(player, enemy);
-		results.push(result);
+    const result = yield* BattleSystemEffect.runBattle(player, enemy);
+    results.push(result);
 
-		if (!player.isAlive()) {
-			console.log("Player defeated!");
-			break;
-		}
+    if (!player.isAlive()) {
+      console.log("Player defeated!");
+      break;
+    }
 
-		// Heal player between battles
-		player.combatStats.health = player.combatStats.maxHealth;
-	}
+    // Heal player between battles
+    player.combatStats.health = player.combatStats.maxHealth;
+  }
 
-	return results;
+  return results;
 });
 
 const results = await Effect.runPromise(runCampaign);
@@ -210,6 +225,7 @@ console.log(`Completed ${results.length} battles`);
 ## Comparison: Promise vs Effect
 
 ### Promise-Based
+
 ```typescript
 const battle = new BattleSystem(player, enemy);
 battle.subscribe((event) => console.log(event));
@@ -217,23 +233,27 @@ const result = await battle.runAutoBattle();
 ```
 
 **Pros:**
+
 - Familiar Promise API
 - No learning curve
 - Simple to use
 
 **Cons:**
+
 - No type-safe error handling
 - Manual resource cleanup
 - Limited composability
 
 ### Effect-Based
+
 ```typescript
 const battle = await Effect.runPromise(
-	BattleSystemEffect.runBattle(player, enemy)
+  BattleSystemEffect.runBattle(player, enemy),
 );
 ```
 
 **Pros:**
+
 - Type-safe errors in signatures
 - Automatic resource management
 - Built-in concurrency support
@@ -241,6 +261,7 @@ const battle = await Effect.runPromise(
 - Pure functional approach
 
 **Cons:**
+
 - Learning curve for Effect.ts
 - More verbose for simple cases
 - Requires understanding of Effect primitives
@@ -250,16 +271,20 @@ const battle = await Effect.runPromise(
 ### 1. Ref for Mutable State
 
 ```typescript
-const contextRef = yield* Ref.make<BattleContext>({ /* initial state */ });
-const context = yield* Ref.get(contextRef);
-yield* Ref.set(contextRef, { ...context, turnNumber: context.turnNumber + 1 });
+const contextRef =
+  yield *
+  Ref.make<BattleContext>({
+    /* initial state */
+  });
+const context = yield * Ref.get(contextRef);
+yield * Ref.set(contextRef, { ...context, turnNumber: context.turnNumber + 1 });
 ```
 
 ### 2. Queue for Event Streaming
 
 ```typescript
-const eventQueue = yield* Queue.unbounded<BattleEvent>();
-yield* Queue.offer(eventQueue, event);
+const eventQueue = yield * Queue.unbounded<BattleEvent>();
+yield * Queue.offer(eventQueue, event);
 const stream = Stream.fromQueue(eventQueue);
 ```
 
@@ -267,9 +292,9 @@ const stream = Stream.fromQueue(eventQueue);
 
 ```typescript
 Effect.gen(function* () {
-	yield* step1();
-	yield* step2();
-	return yield* step3();
+  yield* step1();
+  yield* step2();
+  return yield* step3();
 });
 ```
 
@@ -282,9 +307,9 @@ Effect.all([effect1, effect2, effect3], { concurrency: "unbounded" });
 ### 5. Effect.fork for Background Tasks
 
 ```typescript
-const fiber = yield* Effect.fork(backgroundTask);
+const fiber = yield * Effect.fork(backgroundTask);
 // Continue with other work
-yield* Fiber.join(fiber); // Wait for completion
+yield * Fiber.join(fiber); // Wait for completion
 ```
 
 ## Testing with Effect
@@ -293,14 +318,14 @@ Effect makes testing more predictable:
 
 ```typescript
 test("should handle battle correctly", async () => {
-	const program = Effect.gen(function* () {
-		const battle = yield* BattleSystemEffect.make(player, enemy);
-		return yield* battle.runAutoBattle();
-	});
+  const program = Effect.gen(function* () {
+    const battle = yield* BattleSystemEffect.make(player, enemy);
+    return yield* battle.runAutoBattle();
+  });
 
-	const result = await Effect.runPromise(program);
+  const result = await Effect.runPromise(program);
 
-	expect(result.victory).toBe(true);
+  expect(result.victory).toBe(true);
 });
 ```
 
@@ -323,6 +348,7 @@ Potential improvements using Effect:
 ## When to Use Effect-Based Battle System
 
 **Use Effect-Based when:**
+
 - Running multiple battles concurrently
 - Need type-safe error handling
 - Building complex battle sequences
@@ -330,6 +356,7 @@ Potential improvements using Effect:
 - Need better testability
 
 **Use Promise-Based when:**
+
 - Simple, single battles
 - Integrating with Promise-based code
 - Team is unfamiliar with Effect.ts
