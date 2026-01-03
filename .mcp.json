@@ -1,0 +1,20 @@
+{
+	"mcpServers": {
+		"shadcn": {
+			"command": "npx",
+			"args": ["shadcn@latest", "mcp"]
+		},
+		"effect-docs": {
+			"command": "npx",
+			"args": ["-y", "effect-mcp@latest"]
+		},
+		"eslint": {
+			"command": "npx",
+			"args": ["@eslint/mcp@latest"]
+		},
+		"playwright": {
+			"command": "npx",
+			"args": ["@playwright/mcp@latest"]
+		}
+	}
+}
