@@ -18,6 +18,7 @@ export interface BattleState {
 	selectedMonster: string;
 }
 
+//TODO: Aggregate Battle state into one atom and make it kept alive
 export const battleStateAtom = Atom.make<BattleState | null>(null);
 
 /**

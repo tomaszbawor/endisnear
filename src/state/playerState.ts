@@ -17,14 +17,14 @@ export const currentPlayerAtom = Atom.kvs({
 
 export const equippedItemsAtom = Atom.writable(
 	(get) => {
-		const p = get(currentPlayerAtom);
-		if (!p) return {};
-		return p.items;
+		const playerAtom = get(currentPlayerAtom);
+		if (!playerAtom) return {};
+		return playerAtom.items;
 	},
 	(ctx, newItems: EquippedItems) => {
-		const player = ctx.get(currentPlayerAtom);
-		if (player) {
-			const updatedPlayer = { ...player, items: newItems };
+		const playerAtom = ctx.get(currentPlayerAtom);
+		if (playerAtom) {
+			const updatedPlayer = { ...playerAtom, items: newItems };
 			ctx.set(currentPlayerAtom, { ...updatedPlayer });
 		}
 	},

@@ -16,7 +16,14 @@ export const goldAtom = Atom.make<number>(100000);
 /**
  * Current game view (battle, map, inventory, shop, settings)
  */
-export type GameView = "battle" | "map" | "inventory" | "shop" | "settings";
+export type GameView =
+	| "battle"
+	| "map"
+	| "inventory"
+	| "shop"
+	| "settings"
+	| "levelup";
+
 export const currentViewAtom = Atom.make<GameView>("battle");
 
 /**

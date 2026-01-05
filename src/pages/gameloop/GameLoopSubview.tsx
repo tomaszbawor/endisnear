@@ -3,6 +3,7 @@ import type { EquipmentSlot, Item } from "@/engine/player/Equipment";
 import type { PlayerData } from "@/engine/player/Player";
 import type { GameView } from "@/state/gameState";
 import { InventoryView } from "./InventoryView";
+import LevelUpView from "./LevelupView";
 import { MapView } from "./MapView";
 import { SettingsView } from "./SettingsView";
 import { ShopView } from "./ShopView";
@@ -75,6 +76,7 @@ export function GameLoopSubview({
 					lastRotation={lastShopRotation}
 				/>
 			)}
+			{currentView === "levelup" && <LevelUpView />}
 			{currentView === "settings" && <SettingsView />}
 		</>
 	);

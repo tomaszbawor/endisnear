@@ -31,6 +31,14 @@ export function NavigationBar({
 						active={currentView === "battle"}
 						onClick={() => onViewChange("battle")}
 					/>
+
+					<NavButton
+						icon={<Swords className="h-4 w-4" />}
+						label="LevelUp"
+						active={currentView === "levelup"}
+						onClick={() => onViewChange("levelup")}
+					/>
+
 					<NavButton
 						icon={<MapIcon className="h-4 w-4" />}
 						label="Map"
