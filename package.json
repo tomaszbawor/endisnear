@@ -26,7 +26,7 @@
 	},
 	"dependencies": {
 		"@effect-atom/atom-react": "^0.4.4",
-		"@effect/platform": "^0.94.0",
+		"@effect/platform": "^0.97.0",
 		"@effect/platform-browser": "^0.74.0",
 		"@formkit/auto-animate": "^0.9.0",
 		"@radix-ui/react-dialog": "^1.1.15",
